@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "tribunals"
+version = "0.1.0"
+description = ""
+authors = ["harrisonpim <hello@harrisonpim.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+elasticsearch = "^8.13.0"
+Scrapy = "^2.11.1"
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.7.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
