@@ -14,3 +14,13 @@ scrape:
 
 process:
 	poetry run python scripts/process.py
+
+elasticsearch:
+	docker-compose up -d elasticsearch
+	docker-compose up -d kibana
+
+elasticsearch-down:
+	docker-compose down
+
+index:
+	poetry run python scripts/index.py

@@ -13,6 +13,7 @@ elasticsearch = "^8.13.0"
 Scrapy = "^2.11.1"
 pdfplumber = "^0.11.0"
 rich = "^13.7.1"
+pydantic = "^2.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"
