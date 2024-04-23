@@ -17,6 +17,7 @@ pydantic = "^2.7.0"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"
+ipykernel = "^6.29.4"
 
 [build-system]
 requires = ["poetry-core"]

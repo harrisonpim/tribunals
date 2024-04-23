@@ -1,3 +1,5 @@
+import warnings
+from typing import Union, Optional
 import json
 from pydantic import BaseModel
 from pathlib import Path
@@ -5,30 +7,71 @@ from src.identifiers import pretty_hash
 
 
 class Span(BaseModel):
-    start: int
-    end: int
+    """A span of text within a document"""
+
+    start_index: int
+    end_index: int
+    identifier: Optional[str] = None
 
 
 class Document(BaseModel):
+    """Base class for a document"""
+
     title: str
     text: str
-    pages: list[Span]
+    page_spans: list[Span]
 
-    def from_json(self, file: Path):
+    @classmethod
+    def load(cls, file: Union[str, Path]):
+        """
+        Loads a document from a json file
+
+        :param Union[str, Path] file: The path to the json file
+        :raises ValueError: If the file is not a json file
+        :return Document: The loaded document
+        """
+        file = Path(file)
+        if file.suffix != ".json":
+            raise ValueError("File must be a json file")
+
         with open(file, "r") as f:
             data = json.load(f)
-            self.title = file.stem
-            self.text = " ".join(data)
-            self.pages = []
-            for page_number, page in enumerate(data):
-                self.pages.append(Span(start=page_number, end=page_number))
 
-    def to_json(self, file: Path):
-        with open(file, "w") as f:
-            json.dump(self.model_dump(mode="json"), f)
+        title = file.stem
+        text = "".join(data)
+        page_spans = []
+        index = 0
+        for page in data:
+            page_spans.append(Span(start_index=index, end_index=index + len(page)))
+            index += len(page)
+
+        return cls(title=title, text=text, page_spans=page_spans)
+
+    def save(self, file: Union[str, Path], format: str = "json"):
+        """
+        Saves the document to a file
+
+        :param Union[str, Path] file: The path to save the document to
+        :param str format: The format to save the document in, defaults to "json"
+        :raises NotImplementedError: If the format is not supported
+        """
+        file = Path(file)
+        if format == "json":
+            if file.suffix != ".json":
+                warnings.warn("File does not have .json extension")
+            with open(file, "w", encoding="utf-8") as f:
+                json.dump(self.model_dump(mode="json"), f)
+        else:
+            raise NotImplementedError(f"Format {format} not implemented")
 
     @property
     def id(self):
         return pretty_hash(
             {"title": self.title, "text": self.text, "n_pages": len(self.pages)}
         )
+
+    @property
+    def pages(self):
+        return [
+            self.text[span.start_index : span.end_index] for span in self.page_spans
+        ]
