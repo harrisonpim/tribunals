@@ -1,4 +1,4 @@
-.PHONY: install test scrape process
+.PHONY: install test scrape process elasticsearch kibana elasticsearch-down index
 
 install:
 	poetry install
@@ -17,6 +17,8 @@ process:
 
 elasticsearch:
 	docker-compose up -d elasticsearch
+
+kibana:
 	docker-compose up -d kibana
 
 elasticsearch-down:
@@ -24,3 +26,4 @@ elasticsearch-down:
 
 index:
 	poetry run python scripts/index.py
+

@@ -9,11 +9,11 @@ packages = [{ include = "src" }, { include = "scripts" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-elasticsearch = "^8.13.0"
 Scrapy = "^2.11.1"
 pdfplumber = "^0.11.0"
 rich = "^13.7.1"
 pydantic = "^2.7.0"
+elasticsearch = "7.17"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"

@@ -20,6 +20,7 @@ class Document(BaseModel):
     title: str
     text: str
     page_spans: list[Span]
+    concept_spans: list[Span] = []
 
     @classmethod
     def load(cls, file: Union[str, Path]):
@@ -32,7 +33,7 @@ class Document(BaseModel):
         """
         file = Path(file)
         if file.suffix != ".json":
-            raise ValueError("File must be a json file")
+            raise ValueError(f"File must be a json file: {file}")
 
         with open(file, "r") as f:
             data = json.load(f)
@@ -75,3 +76,6 @@ class Document(BaseModel):
         return [
             self.text[span.start_index : span.end_index] for span in self.page_spans
         ]
+
+    def __repr__(self) -> str:
+        return f"Document(id={self.id}, title={self.title}, n_pages={len(self.pages)})"
