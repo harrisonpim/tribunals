@@ -21,6 +21,11 @@ class Document(BaseModel):
     text: str
     page_spans: list[Span]
     concept_spans: list[Span] = []
+    sentence_spans: list[Span] = []
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        self.sentence_spans = self._get_sentence_spans()
 
     @classmethod
     def load(cls, file: Union[str, Path]):
@@ -65,6 +70,21 @@ class Document(BaseModel):
         else:
             raise NotImplementedError(f"Format {format} not implemented")
 
+    def _get_sentence_spans(self):
+        """
+        Get the spans of the sentences in the document
+
+        :return list[Span]: The spans of the sentences
+        """
+        sentence_spans = []
+        index = 0
+        for sentence in self.text.split("."):
+            sentence_spans.append(
+                Span(start_index=index, end_index=index + len(sentence))
+            )
+            index += len(sentence) + 1
+        return sentence_spans
+
     @property
     def id(self):
         return pretty_hash(
@@ -76,6 +96,16 @@ class Document(BaseModel):
         return [
             self.text[span.start_index : span.end_index] for span in self.page_spans
         ]
+
+    @property
+    def sentences(self):
+        return [
+            self.text[span.start_index : span.end_index] for span in self.sentence_spans
+        ]
+
+    @property
+    def concepts(self):
+        return list(set([span.identifier for span in self.concept_spans]))
 
     def __repr__(self) -> str:
         return f"Document(id={self.id}, title={self.title}, n_pages={len(self.pages)})"

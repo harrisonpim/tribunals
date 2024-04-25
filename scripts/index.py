@@ -2,8 +2,8 @@
 Index data into elasticsearch
 
 Raw data (json files in data/processed as lists of strings) is indexed into 
-elasticsearch. each string is a page, so we increment the page number for each string 
-in the list.
+elasticsearch. each string is a sentence, so we increment the sentence number for
+each string in the list.
 """
 
 from rich.console import Console
@@ -59,7 +59,7 @@ mappings = {
                 "id": {"type": "keyword"},
             },
         },
-        "page": {
+        "sentence": {
             "properties": {
                 "number": {"type": "integer"},
                 "text": {"type": "text", "analyzer": "english_analyzer"},
@@ -91,18 +91,18 @@ for file in track(
     files, description="Indexing documents", console=console, transient=True
 ):
     document = Document.load(file)
-    for page_number, page in enumerate(document.pages):
+    for sentence_number, sentence in enumerate(document.sentences):
         es.index(
             index=index_name,
-            id=f"{document.id}_{page_number}",
+            id=f"{document.id}_{sentence_number}",
             document={
                 "document": {"title": document.title, "id": document.id},
-                "page": {"number": page_number, "text": page},
+                "sentence": {"number": sentence_number, "text": sentence},
             },
         )
 
-total_pages = es.count(index=index_name).get("count", 0)
+total_sentences = es.count(index=index_name).get("count", 0)
 console.print(
-    f"✅ indexed {len(files)} documents with {total_pages} individual pages",
+    f"✅ indexed {len(files)} documents with {total_sentences} individual sentences",
     style="green",
 )
