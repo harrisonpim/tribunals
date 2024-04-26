@@ -1,16 +1,17 @@
 """
 Index data into elasticsearch
 
-Raw data (json files in data/processed as lists of strings) is indexed into 
+Raw data (json files in data/processed as lists of strings) is indexed into
 elasticsearch. each string is a sentence, so we increment the sentence number for
 each string in the list.
 """
 
+from pathlib import Path
+
+from elasticsearch import Elasticsearch
 from rich.console import Console
 from rich.progress import track
 
-from pathlib import Path
-from elasticsearch import Elasticsearch
 from src.document import Document
 
 console = Console()

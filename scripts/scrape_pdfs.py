@@ -4,10 +4,11 @@ Scrape Employment Appeal Tribunal decision pdfs from the gov.uk website
 https://www.gov.uk/employment-appeal-tribunal-decisions
 """
 
-import scrapy
-from scrapy.http import Request
-from scrapy.crawler import CrawlerProcess
 from pathlib import Path
+
+import scrapy
+from scrapy.crawler import CrawlerProcess
+from scrapy.http import Request
 
 data_dir = Path("data/raw")
 data_dir.mkdir(parents=True, exist_ok=True)

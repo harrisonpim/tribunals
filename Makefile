@@ -1,4 +1,4 @@
-.PHONY: install test scrape process elasticsearch kibana elasticsearch-down index
+.PHONY: install test scrape_pdfs parse_pdfs elasticsearch kibana elasticsearch-down index
 
 install:
 	poetry install
@@ -9,11 +9,11 @@ test:
 	poetry run pre-commit run -a
 	poetry run pytest
 
-scrape:
-	poetry run scrapy runspider scripts/scrape.py
+scrape_pdfs:
+	poetry run scrapy runspider scripts/scrape_pdfs.py
 
-process:
-	poetry run python scripts/process.py
+parse_pdfs:
+	poetry run python scripts/parse_pdfs.py
 
 elasticsearch:
 	docker-compose up -d elasticsearch

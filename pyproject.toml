@@ -33,5 +33,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.ruff]
-select = ["E", "F", "I"]
+lint.select = ["E", "F", "I"]
 extend-include = ["*.ipynb"]

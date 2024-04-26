@@ -1,8 +1,9 @@
-from abc import ABC, abstractmethod
-from src.document import Span
-from src.concept import Concept
-from typing import List
 import re
+from abc import ABC, abstractmethod
+from typing import List
+
+from src.concept import Concept
+from src.document import Span
 
 
 class Classifier(ABC):
@@ -26,7 +27,8 @@ class RegexClassifier(Classifier):
     def predict(self, text: str) -> List[Span]:
         spans = []
         for label in self.concept.all_labels:
-            for match in re.finditer(label, text):
+            pattern = r"\b{}\b".format(re.escape(label.lower()))
+            for match in re.finditer(pattern, text.lower()):
                 spans.append(
                     Span(
                         start_index=match.start(),

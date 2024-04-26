@@ -6,5 +6,5 @@ Scraping tribunal decision docs from [gov.uk](https://www.gov.uk/employment-appe
 ## Usage
 
 - `make install` to install dependencies
-- `make scrape` to scrape pdfs from gov.uk
-- `make process` to extract text from pdfs
+- `make scrape_pdfs` to scrape pdfs from gov.uk
+- `make parse_pdfs` to extract text from pdfs

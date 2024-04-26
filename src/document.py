@@ -29,12 +29,13 @@ class Document(BaseModel):
     concept_spans: List[Span] = []
     sentence_spans: List[Span] = []
 
-    def __init__(self, **data):
+    def __init__(self, parse: bool = True, **data):
         super().__init__(**data)
-        self.sentence_spans = self._get_sentence_spans()
+        if parse:
+            self.sentence_spans = self._get_sentence_spans()
 
     @classmethod
-    def load(cls, file: Union[str, Path]):
+    def load(cls, file: Union[str, Path], parse: bool = True):
         """Loads a document from a json file
 
         :param Union[str, Path] file: The path to the json file
@@ -45,7 +46,7 @@ class Document(BaseModel):
         if file.suffix != ".json":
             raise ValueError(f"File must be a json file: {file}")
 
-        with open(file, "r") as f:
+        with open(file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
         title = file.stem
@@ -56,9 +57,9 @@ class Document(BaseModel):
             page_spans.append(Span(start_index=index, end_index=index + len(page)))
             index += len(page)
 
-        return cls(title=title, text=text, page_spans=page_spans)
+        return cls(title=title, text=text, page_spans=page_spans, parse=parse)
 
-    def save(self, file: Union[str, Path], format: str = "json"):
+    def save(self, file: Union[str, Path]):
         """Saves the document to a file
 
         :param Union[str, Path] file: The path to save the document to
@@ -66,13 +67,10 @@ class Document(BaseModel):
         :raises NotImplementedError: If the format is not supported
         """
         file = Path(file)
-        if format == "json":
-            if file.suffix != ".json":
-                warnings.warn("File does not have .json extension")
-            with open(file, "w", encoding="utf-8") as f:
-                json.dump(self.model_dump(mode="json"), f)
-        else:
-            raise NotImplementedError(f"Format {format} not implemented")
+        if file.suffix != ".json":
+            warnings.warn("File does not have .json extension")
+        with open(file, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(indent=2))
 
     def _get_sentence_spans(self):
         """Get the spans of the sentences in the document

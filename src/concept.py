@@ -1,5 +1,9 @@
+import json
+from pathlib import Path
+from typing import List, Union
+
 from pydantic import BaseModel
-from typing import List
+
 from src.identifiers import pretty_hash
 
 
@@ -15,10 +19,20 @@ class Concept(BaseModel):
     def __repr__(self) -> str:
         return f"Concept({self.preferred_label})"
 
+    @property
+    def id(self) -> str:
+        return pretty_hash(self.preferred_label)
+
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)
 
-    @property
-    def id(self) -> str:
-        return pretty_hash(self.preferred_label)
+    @classmethod
+    def load(cls, file_path: Union[str, Path]):
+        with open(file_path) as f:
+            data = json.load(f)
+        return cls.from_dict(data)
+
+    def save(self, file_path: Union[str, Path]):
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(indent=2))

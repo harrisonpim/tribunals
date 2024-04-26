@@ -1,14 +1,16 @@
 """
 Extract text from PDFs
 
-Transforms the text of every PDF in the data/raw folder into a json file containing a 
-list of strings, one for each page of the PDF. The json files are saved in the 
+Transforms the text of every PDF in the data/raw folder into a json file containing a
+list of strings, one for each page of the PDF. The json files are saved in the
 data/processed folder.
 """
 
-import pdfplumber
-from pathlib import Path
 import json
+from pathlib import Path
+
+import pdfplumber
+
 from src.logging import get_logger
 
 logger = get_logger(__name__)
