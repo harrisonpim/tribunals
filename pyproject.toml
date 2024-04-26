@@ -14,6 +14,15 @@ pdfplumber = "^0.11.0"
 rich = "^13.7.1"
 pydantic = "^2.7.0"
 elasticsearch = "7.17"
+transformers = "^4.40.1"
+torch = "^2.3.0"
+umap-learn = "^0.5.6"
+plotly = "^5.21.0"
+pandas = "^2.2.2"
+nbformat = "^5.10.4"
+spacy = "^3.7.4"
+en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl"}
+
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.7.0"
@@ -22,3 +31,7 @@ ipykernel = "^6.29.4"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ["E", "F", "I"]
+extend-include = ["*.ipynb"]

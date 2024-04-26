@@ -1,9 +1,15 @@
-import warnings
-from typing import Union, Optional
 import json
-from pydantic import BaseModel
+import warnings
 from pathlib import Path
+from typing import List, Optional, Union
+
+import spacy
+from pydantic import BaseModel
+
 from src.identifiers import pretty_hash
+
+nlp = spacy.blank("en")
+nlp.add_pipe("sentencizer")
 
 
 class Span(BaseModel):
@@ -19,9 +25,9 @@ class Document(BaseModel):
 
     title: str
     text: str
-    page_spans: list[Span]
-    concept_spans: list[Span] = []
-    sentence_spans: list[Span] = []
+    page_spans: List[Span]
+    concept_spans: List[Span] = []
+    sentence_spans: List[Span] = []
 
     def __init__(self, **data):
         super().__init__(**data)
@@ -29,8 +35,7 @@ class Document(BaseModel):
 
     @classmethod
     def load(cls, file: Union[str, Path]):
-        """
-        Loads a document from a json file
+        """Loads a document from a json file
 
         :param Union[str, Path] file: The path to the json file
         :raises ValueError: If the file is not a json file
@@ -54,8 +59,7 @@ class Document(BaseModel):
         return cls(title=title, text=text, page_spans=page_spans)
 
     def save(self, file: Union[str, Path], format: str = "json"):
-        """
-        Saves the document to a file
+        """Saves the document to a file
 
         :param Union[str, Path] file: The path to save the document to
         :param str format: The format to save the document in, defaults to "json"
@@ -71,18 +75,16 @@ class Document(BaseModel):
             raise NotImplementedError(f"Format {format} not implemented")
 
     def _get_sentence_spans(self):
-        """
-        Get the spans of the sentences in the document
+        """Get the spans of the sentences in the document
 
         :return list[Span]: The spans of the sentences
         """
+        doc = nlp(self.text)
         sentence_spans = []
-        index = 0
-        for sentence in self.text.split("."):
+        for sent in doc.sents:
             sentence_spans.append(
-                Span(start_index=index, end_index=index + len(sentence))
+                Span(start_index=sent.start_char, end_index=sent.end_char)
             )
-            index += len(sentence) + 1
         return sentence_spans
 
     @property

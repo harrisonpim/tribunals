@@ -1,15 +1,18 @@
-from rich.progress import track
-from rich.console import Console
-from src.classifiers import RegexClassifier
-from src.document import Document
-from src.concept import Concept
 import json
-from pathlib import Path
 import random
+from pathlib import Path
+
+from rich.console import Console
+from rich.progress import track
+
+from src.classifiers import RegexClassifier
+from src.concept import Concept
+from src.document import Document
 
 console = Console()
 data_dir = Path("data/processed")
 files = list(data_dir.glob("*.json"))
+documents = [Document.load(file) for file in files]
 console.print(f"📄 Loaded {len(files)} documents", style="green")
 
 with open("data/concepts.json") as f:
@@ -21,10 +24,9 @@ classifiers = [RegexClassifier(concept) for concept in concepts]
 console.print(f"🤖 Created {len(classifiers)} classifiers", style="green")
 
 documents_with_concepts = []
-for file in track(
-    files, description="Searching for concepts in documents", console=console
+for document in track(
+    documents, description="Searching for concepts in documents", console=console
 ):
-    document = Document.load(file)
     for classifier in classifiers:
         spans = classifier.predict(document.text)
         document.concept_spans.extend(spans)
