@@ -35,8 +35,8 @@ class Document(BaseModel):
             self.sentence_spans = self._get_sentence_spans()
 
     @classmethod
-    def load(cls, file: Union[str, Path], parse: bool = True):
-        """Loads a document from a json file
+    def load_raw(cls, file: Union[str, Path], parse: bool = True):
+        """Loads a document from a json file of raw text
 
         :param Union[str, Path] file: The path to the json file
         :raises ValueError: If the file is not a json file
@@ -58,6 +58,23 @@ class Document(BaseModel):
             index += len(page)
 
         return cls(title=title, text=text, page_spans=page_spans, parse=parse)
+
+    @classmethod
+    def load(cls, file: Union[str, Path]):
+        """Loads a document from a json file with pre-structured document data
+
+        :param Union[str, Path] file: The path to the json file
+        :raises ValueError: If the file is not a json file
+        :return Document: The loaded document
+        """
+        file = Path(file)
+        if file.suffix != ".json":
+            raise ValueError(f"File must be a json file: {file}")
+
+        with open(file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        return cls(**data)
 
     def save(self, file: Union[str, Path]):
         """Saves the document to a file
@@ -105,7 +122,7 @@ class Document(BaseModel):
 
     @property
     def concepts(self):
-        return list(set([span.identifier for span in self.concept_spans]))
+        return [span.identifier for span in self.concept_spans]
 
     def __repr__(self) -> str:
         return f"Document(id={self.id}, title={self.title}, n_pages={len(self.pages)})"

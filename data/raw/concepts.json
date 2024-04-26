@@ -1,0 +1,206 @@
+[
+    {
+        "preferred_label": "ageism",
+        "description": "stereotyping, prejudice or/and discrimination based on age",
+        "alternative_labels": [
+            "agism",
+            "age",
+            "agist",
+            "ageist"
+        ]
+    },
+    {
+        "preferred_label": "agency work",
+        "description": "work carried out by an individual who is employed by an agency and is contracted to work for a client",
+        "alternative_labels": [
+            "agency labour",
+            "agency employment",
+            "agency worker",
+            "agency staff",
+            "agency personnel",
+            "agency temp",
+            "recruitment firm",
+            "recruitment consultancy",
+            "recruitment company",
+            "employment agency"
+        ]
+    },
+    {
+        "preferred_label": "unfair dismissal",
+        "description": "dismissal of an employee without a fair reason or without following the correct procedures",
+        "alternative_labels": [
+            "wrongful dismissal",
+            "unjust dismissal",
+            "unlawful dismissal",
+            "unjustified dismissal",
+            "unjust termination",
+            "unlawful termination",
+            "unjustified termination",
+            "unjust firing",
+            "unlawful firing",
+            "unjustified firing",
+            "wrongful termination",
+            "wrongful firing"
+        ]
+    },
+    {
+        "preferred_label": "race",
+        "description": "a group of people who share the same culture, history, language, etc.",
+        "alternative_labels": [
+            "racism",
+            "racial",
+            "racist"
+        ]
+    },
+    {
+        "preferred_label": "disability",
+        "description": "impairments, activity and participation limitations of a person",
+        "alternative_labels": [
+            "ableism",
+            "ableist",
+            "handicap",
+            "handicapped",
+            "disabled"
+        ]
+    },
+    {
+        "preferred_label": "religion",
+        "description": "a system of faith or worship",
+        "alternative_labels": [
+            "religion",
+            "religious",
+            "christian",
+            "muslim",
+            "jewish",
+            "hindu",
+            "buddhist",
+            "sikh",
+            "jain",
+            "bahai",
+            "pagan",
+            "wiccan",
+            "druid",
+            "shinto",
+            "taoist",
+            "atheist",
+            "agnostic",
+            "humanist"
+        ]
+    },
+    {
+        "preferred_label": "sexual orientation",
+        "description": "the sexual orientation of a person relative to their declared gender",
+        "alternative_labels": [
+            "homophobia",
+            "homophobic"
+        ]
+    },
+    {
+        "preferred_label": "gender",
+        "description": "",
+        "alternative_labels": [
+            "sexism",
+            "sexist",
+            "gendered",
+            "man",
+            "woman",
+            "non-binary",
+            "non binary",
+            "transgender",
+            "transphobia"
+        ]
+    },
+    {
+        "preferred_label": "compensation",
+        "description": "payment or benefits received in exchange for work or services performed by an employee",
+        "alternative_labels": [
+            "pay",
+            "wage",
+            "salary",
+            "bonus",
+            "commission",
+            "benefits",
+            "perks",
+            "pension",
+            "severance"
+        ]
+    },
+    {
+        "preferred_label": "whistleblowing",
+        "description": "the act of reporting an employer for illegal or unethical practices",
+        "alternative_labels": [
+            "whistleblower",
+            "whistle blow",
+            "blow the whistle"
+        ]
+    },
+    {
+        "preferred_label": "redundancy",
+        "description": "the termination of an employee's contract because the employer no longer requires the employee's job to be done",
+        "alternative_labels": [
+            "layoff",
+            "lay off",
+            "furlough",
+            "furloughed",
+            "redundant",
+            "redundancies",
+            "layoffs",
+            "lay offs",
+            "furloughs",
+            "furloughed"
+        ]
+    },
+    {
+        "preferred_label": "maternity/paternity rights",
+        "description": "the rights of a parent to take time off work to care for a child",
+        "alternative_labels": [
+            "parental",
+            "maternal",
+            "paternal",
+            "maternity",
+            "paternity"
+        ]
+    },
+    {
+        "preferred_label": "harassment",
+        "description": "unwanted behaviour that violates a person's dignity or creates an intimidating, hostile, degrading, humiliating or offensive environment",
+        "alternative_labels": [
+            "bullying",
+            "intimidation",
+            "threatening",
+            "threat",
+            "abuse",
+            "discrimination",
+            "victimisation",
+            "stalking"
+        ]
+    },
+    {
+        "preferred_label": "health and safety",
+        "description": "the protection of the health, safety and welfare of people at work",
+        "alternative_labels": [
+            "health",
+            "safety",
+            "welfare",
+            "wellbeing"
+        ]
+    },
+    {
+        "preferred_label": "working time regulations",
+        "description": "regulations that govern the hours that employees can work",
+        "alternative_labels": [
+            "working hours",
+            "rest",
+            "break",
+            "annual leave",
+            "holiday"
+        ]
+    },
+    {
+        "preferred_label": "collective bargaining",
+        "description": "negotiation of wages and other conditions of employment by an organised body of employees",
+        "alternative_labels": [
+            "union"
+        ]
+    }
+]
