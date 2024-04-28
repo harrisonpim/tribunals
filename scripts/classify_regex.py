@@ -1,3 +1,11 @@
+"""
+Use a RegexClassifier to find concepts in documents.
+
+The concepts are loaded from data/raw/concepts.json and the documents are loaded
+from data/raw/text. After classification, the documents with concepts are saved in
+data/processed/documents and the concepts are saved in data/processed/concepts.
+"""
+
 import json
 from pathlib import Path
 

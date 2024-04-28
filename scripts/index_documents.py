@@ -1,4 +1,12 @@
-"""Index full documents into elasticsearch"""
+"""
+Index full documents into elasticsearch.
+
+This script reads the raw text files from the data/raw/text directory, indexes them into
+an index called "documents" in a locally running elasticsearch cluster.
+The documents are indexed with "title" and "text" fields. Both fields are analyzed using
+a custom analyzer that tokenizes the text, removes stopwords, stems/lemmatizes words,
+and creates shingles (n-grams).
+"""
 
 from pathlib import Path
 

@@ -1,4 +1,28 @@
-"""Index sentences into elasticsearch"""
+"""
+Index sentences into elasticsearch.
+
+
+This script reads the raw text files from the data/raw/text directory, splits them into
+sentences, and indexes each sentence as a separate document into an index called
+"sentences" in a locally running elasticsearch cluster.
+
+The indexed sentences have a structure like:
+{
+    "document": {
+        "title": "document title",
+        "id": "document id"
+    },
+    "sentence": {
+        "number": 0,
+        "text": "sentence text"
+    }
+}
+
+The ID of each sentence is a combination of the document ID and the sentence number.
+"document.title" and "sentence.text" fields are analyzed using a custom analyzer that
+tokenizes the text, removes stopwords, stems/lemmatizes words, and creates shingles
+(n-grams).
+"""
 
 from pathlib import Path
 
