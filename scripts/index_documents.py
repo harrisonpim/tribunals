@@ -1,10 +1,4 @@
-"""
-Index data into elasticsearch
-
-Raw data (json files in data/processed as lists of strings) is indexed into
-elasticsearch. each string is a sentence, so we increment the sentence number for
-each string in the list.
-"""
+"""Index full documents into elasticsearch"""
 
 from pathlib import Path
 
@@ -54,18 +48,8 @@ settings = {
 }
 mappings = {
     "properties": {
-        "document": {
-            "properties": {
-                "title": {"type": "text", "analyzer": "english_analyzer"},
-                "id": {"type": "keyword"},
-            },
-        },
-        "sentence": {
-            "properties": {
-                "number": {"type": "integer"},
-                "text": {"type": "text", "analyzer": "english_analyzer"},
-            },
-        },
+        "title": {"type": "text", "analyzer": "english_analyzer"},
+        "text": {"type": "text", "analyzer": "english_analyzer"},
     }
 }
 
@@ -85,25 +69,21 @@ if es.indices.exists(index=index_name):
 es.indices.create(index=index_name, settings=settings, mappings=mappings, ignore=400)
 console.print(f"✅ created index: {index_name}", style="green")
 
-data_dir = Path("data/processed")
+data_dir = Path("data/raw/text")
 files = list(data_dir.glob("*.json"))
 
 for file in track(
     files, description="Indexing documents", console=console, transient=True
 ):
-    document = Document.load(file)
-    for sentence_number, sentence in enumerate(document.sentences):
-        es.index(
-            index=index_name,
-            id=f"{document.id}_{sentence_number}",
-            document={
-                "document": {"title": document.title, "id": document.id},
-                "sentence": {"number": sentence_number, "text": sentence},
-            },
-        )
+    document = Document.load_raw(file)
+    es.index(
+        index=index_name,
+        id=document.id,
+        document={
+            "title": document.title,
+            "text": document.text,
+        },
+    )
 
-total_sentences = es.count(index=index_name).get("count", 0)
-console.print(
-    f"✅ indexed {len(files)} documents with {total_sentences} individual sentences",
-    style="green",
-)
+
+console.print(f"✅ indexed {len(files)} documents", style="green")

@@ -14,7 +14,7 @@ raw_text_dir = data_dir / "raw" / "text"
 files = list(raw_text_dir.glob("*.json"))
 
 documents = [
-    Document.load(file)
+    Document.load_raw(file, parse=False)
     for file in track(
         files, description="Loading documents", console=console, transient=True
     )
@@ -44,7 +44,7 @@ for document in track(
     transient=True,
 ):
     for classifier in classifiers:
-        spans = classifier.predict(document.text)
+        spans = classifier.predict(document)
         document.concept_spans.extend(spans)
     if document.concept_spans:
         documents_with_concepts.append(document)
