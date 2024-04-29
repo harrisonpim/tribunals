@@ -1,59 +1,10 @@
-import pickle
-import re
-from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import List, Union
+from typing import List
 
 from elasticsearch import Elasticsearch
 
+from src.classifiers.classifier import Classifier
 from src.concept import Concept
 from src.document import Document, Span
-
-
-class Classifier(ABC):
-    """Abstract class for all classifier types."""
-
-    def __init__(self, concept: Concept):
-        self.concept = concept
-
-    @abstractmethod
-    def predict(self, document: Document) -> List[Span]:
-        """Find spans which match the concept in the document text."""
-        pass
-
-    def __repr__(self):
-        return f"{self.__class__.__name__}({self.concept.preferred_label})"
-
-    def save(self, path: Union[str, Path]):
-        """Save the classifier to a file."""
-        with open(path, "wb") as f:
-            pickle.dump(self, f)
-
-    @classmethod
-    def load(cls, path: Union[str, Path]):
-        """Load a classifier from a file."""
-        with open(path, "rb") as f:
-            classifier = pickle.load(f)
-        assert isinstance(classifier, Classifier)
-        return classifier
-
-
-class RegexClassifier(Classifier):
-    """Classifier that uses regular expressions to find spans of text."""
-
-    def predict(self, document: Document) -> List[Span]:
-        spans = []
-        for label in self.concept.all_labels:
-            pattern = r"\b{}\b".format(re.escape(label.lower()))
-            for match in re.finditer(pattern, document.text.lower()):
-                spans.append(
-                    Span(
-                        start_index=match.start(),
-                        end_index=match.end(),
-                        identifier=self.concept.id,
-                    )
-                )
-        return spans
 
 
 class ElasticsearchClassifier(Classifier):
