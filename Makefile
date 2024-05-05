@@ -25,5 +25,6 @@ elasticsearch-down:
 	docker-compose down
 
 index:
-	poetry run python scripts/index.py
+	poetry run python scripts/index_documents.py
+	poetry run python scripts/index_concepts.py
 
