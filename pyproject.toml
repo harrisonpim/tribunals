@@ -9,25 +9,23 @@ packages = [{ include = "src" }, { include = "scripts" }]
 
 [tool.poetry.dependencies]
 python = "^3.10"
-Scrapy = "^2.11.1"
-pdfplumber = "^0.11.0"
-rich = "^13.7.1"
-pydantic = "^2.7.0"
 elasticsearch = "7.17"
-transformers = "^4.40.1"
-torch = "^2.3.0"
-umap-learn = "^0.5.6"
-plotly = "^5.21.0"
-pandas = "^2.2.2"
+ipykernel = "^6.29.4"
 nbformat = "^5.10.4"
+pandas = "^2.2.2"
+pdfplumber = "^0.11.0"
+plotly = "^5.21.0"
+pre-commit = "^3.7.0"
+pydantic = "^2.7.0"
+rich = "^13.7.1"
+Scrapy = "^2.11.1"
+seaborn = "^0.13.2"
+torch = "^2.3.0"
+transformers = "^4.40.1"
+umap-learn = "^0.5.6"
 spacy = "^3.7.4"
 en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl"}
-seaborn = "^0.13.2"
-
-
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.7.0"
-ipykernel = "^6.29.4"
+fastapi = "*"
 
 [build-system]
 requires = ["poetry-core"]

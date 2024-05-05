@@ -1,4 +1,4 @@
-.PHONY: install test scrape_pdfs parse_pdfs elasticsearch kibana elasticsearch-down index
+.PHONY: install test scrape_pdfs parse_pdfs elasticsearch kibana index api
 
 install:
 	poetry install
@@ -21,10 +21,9 @@ elasticsearch:
 kibana:
 	docker-compose up -d kibana
 
-elasticsearch-down:
-	docker-compose down
-
 index:
 	poetry run python scripts/index_documents.py
 	poetry run python scripts/index_concepts.py
 
+api:
+	docker-compose up -d api

@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
@@ -17,6 +17,18 @@ services:
       - 5601:5601
     depends_on:
       - elasticsearch
+
+  api:
+    build:
+      context: ./
+      dockerfile: ./api/Dockerfile
+    container_name: api
+    ports:
+      - 3000:3000
+    depends_on:
+      - elasticsearch
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
 
 volumes:
   esdata:
