@@ -11,6 +11,8 @@ RUN poetry install
 
 ENV PATH="/root/.local/bin:${PATH}"
 
+COPY ./src/ /api/src/
+
 COPY ./api/app /api/app
 
 CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]

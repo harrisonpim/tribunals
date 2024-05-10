@@ -10,7 +10,7 @@ import scrapy
 from scrapy.crawler import CrawlerProcess
 from scrapy.http import Request
 
-data_dir = Path("data/raw")
+data_dir = Path("data/raw/pdfs")
 data_dir.mkdir(parents=True, exist_ok=True)
 
 

@@ -87,10 +87,7 @@ for file in track(
     es.index(
         index=index_name,
         id=document.id,
-        document={
-            "title": document.title,
-            "text": document.text,
-        },
+        document=document.model_dump(),
     )
 
 
