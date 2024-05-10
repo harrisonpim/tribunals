@@ -40,33 +40,55 @@ async def read_documents(
         default_page_size, ge=1, le=100, description="The number of items to return"
     ),
     query: str = Query(None, description="Search terms for full-text search"),
+    concepts: Optional[List[str]] = Query(
+        alias="concept",
+        default=None,
+        description=(
+            "Filter documents by the IDs of the concepts that they mention. If "
+            "multiple concept IDs are provided, documents may contain any of the "
+            "concepts, ie. the filter is treated as an OR operation"
+        ),
+    ),
 ) -> DocumentResponse:
     base_url = request.url.scheme + "://" + request.url.netloc + request.url.path
 
     # get results from Elasticsearch
+    query_parameters = {
+        "index": INDEX_NAME,
+        "size": pageSize,
+        "from_": (page - 1) * pageSize,
+        "body": {"query": {"bool": {"must": [{"match_all": {}}]}}},
+    }
+
     if query:
-        res = es.search(
-            index=INDEX_NAME,
-            body={
-                "query": {"multi_match": {"query": query, "fields": ["title", "text"]}}
-            },
-            from_=(page - 1) * pageSize,
-            size=pageSize,
-        )
+        query_parameters["body"]["query"]["bool"]["must"] = [
+            {
+                "multi_match": {
+                    "query": query,
+                    "fields": ["title", "text"],
+                }
+            }
+        ]
     else:
-        res = es.search(
-            index=INDEX_NAME,
-            body={"query": {"match_all": {}}},
-            from_=(page - 1) * pageSize,
-            size=pageSize,
-            sort=["_id"],
+        query_parameters.update(
+            {
+                "sort": ["_id"],
+            }
         )
+    if concepts:
+        query_parameters["body"]["query"]["bool"]["must"].append(
+            {"terms": {"concepts": concepts}}
+        )
+
+    res = es.search(**query_parameters)
 
     # format results
     results = [
         Document(**hit["_source"]) for hit in res.get("hits", {}).get("hits", [])
     ]
-    response = format_response_metadata(res, base_url, page, pageSize, query, results)
+    response = format_response_metadata(
+        res, base_url, page, pageSize, query, results, concepts
+    )
     return response
 
 

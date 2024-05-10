@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import List, Optional, Union
 
 from src.concept import Concept
 from src.document import Document
@@ -11,8 +11,9 @@ def format_response_metadata(
     base_url: str,
     page: int,
     pageSize: int,
-    query: str,
+    query: Optional[str],
     results: Union[List[Document], List[Concept]],
+    concepts: Optional[List[str]] = None,
 ):
     totalResults = res.get("hits", {}).get("total", {}).get("value", 0)
     response = {
@@ -21,19 +22,23 @@ def format_response_metadata(
     }
 
     if totalResults > page * pageSize:
-        nextpage = f"{base_url}?page={page + 1}"
+        next_page = f"{base_url}?page={page + 1}"
         if pageSize != default_page_size:
-            nextpage += f"&pageSize={pageSize}"
+            next_page += f"&pageSize={pageSize}"
         if query:
-            nextpage += f"&query={query}"
-        response["nextPage"] = nextpage
+            next_page += f"&query={query}"
+        if concepts:
+            next_page += "".join([f"&concept={concept}" for concept in concepts])
+        response["nextPage"] = next_page
 
     if page > 1:
-        previouspage = f"{base_url}?page={page - 1}"
+        previous_page = f"{base_url}?page={page - 1}"
         if pageSize != default_page_size:
-            previouspage += f"&pageSize={pageSize}"
+            previous_page += f"&pageSize={pageSize}"
         if query:
-            previouspage += f"&query={query}"
-        response["previousPage"] = previouspage
+            previous_page += f"&query={query}"
+        if concepts:
+            previous_page += "".join([f"&concept={concept}" for concept in concepts])
+        response["previousPage"] = previous_page
 
     return response

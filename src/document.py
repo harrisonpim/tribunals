@@ -137,6 +137,7 @@ class Document(BaseModel):
             self.text[span.start_index : span.end_index] for span in self.sentence_spans
         ]
 
+    @computed_field(return_type=List[str])
     @property
     def concepts(self):
         return [span.identifier for span in self.concept_spans]

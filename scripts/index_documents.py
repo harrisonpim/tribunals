@@ -58,6 +58,7 @@ mappings = {
     "properties": {
         "title": {"type": "text", "analyzer": "english_analyzer"},
         "text": {"type": "text", "analyzer": "english_analyzer"},
+        "concepts": {"type": "keyword"},
     }
 }
 
