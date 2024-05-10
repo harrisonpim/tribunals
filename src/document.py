@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 import spacy
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.identifiers import pretty_hash
 
@@ -15,19 +15,35 @@ nlp.add_pipe("sentencizer")
 class Span(BaseModel):
     """A span of text within a document"""
 
-    start_index: int
-    end_index: int
-    identifier: Optional[str] = None
+    start_index: int = Field(
+        ..., description="The start index of the span within the document text"
+    )
+    end_index: int = Field(
+        ..., description="The end index of the span within the document text"
+    )
+    identifier: Optional[str] = Field(
+        None,
+        description="An optional identifier for the span, if it refers to a concept",
+    )
 
 
 class Document(BaseModel):
     """Base class for a document"""
 
-    title: str
-    text: str
-    page_spans: List[Span]
-    concept_spans: List[Span] = []
-    sentence_spans: List[Span] = []
+    title: str = Field(..., description="The title of the document")
+    text: str = Field(..., description="The complete text of the document")
+    page_spans: List[Span] = Field(
+        [], description="A list of spans representing the pages of the document"
+    )
+    concept_spans: List[Span] = Field(
+        [],
+        description=(
+            "A list of spans representing appearances of concepts within the document"
+        ),
+    )
+    sentence_spans: List[Span] = Field(
+        [], description="A list of spans representing the sentences within the document"
+    )
 
     def __init__(self, parse: bool = True, **data):
         super().__init__(**data)

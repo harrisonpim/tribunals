@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from src.concept import Concept
 
-from . import default_page_size
+from . import format_response_metadata
 
 router = APIRouter(prefix="/concepts")
 
@@ -77,30 +77,7 @@ async def read_concepts(
         elasticsearch_hit_to_concept_response(hit)
         for hit in res.get("hits", {}).get("hits", [])
     ]
-
-    # add metadata to response
-    totalResults = res.get("hits", {}).get("total", {}).get("value", 0)
-    response = {
-        "totalResults": totalResults,
-        "results": results,
-    }
-
-    if totalResults > page * pageSize:
-        nextpage = f"{base_url}?page={page + 1}"
-        if pageSize != default_page_size:
-            nextpage += f"&pageSize={pageSize}"
-        if query:
-            nextpage += f"&query={query}"
-        response["nextPage"] = nextpage
-
-    if page > 1:
-        previouspage = f"{base_url}?page={page - 1}"
-        if pageSize != default_page_size:
-            previouspage += f"&pageSize={pageSize}"
-        if query:
-            previouspage += f"&query={query}"
-        response["previousPage"] = previouspage
-
+    response = format_response_metadata(res, base_url, page, pageSize, query, results)
     return response
 
 

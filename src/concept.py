@@ -2,15 +2,23 @@ import json
 from pathlib import Path
 from typing import List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.identifiers import pretty_hash
 
 
 class Concept(BaseModel):
-    preferred_label: str
-    description: str
-    alternative_labels: List[str]
+    preferred_label: str = Field(..., description="The preferred label for the concept")
+    description: str = Field(
+        None,
+        description=(
+            "An optional description of the concept with enough detail to disambiguate "
+            "it from similar concepts"
+        ),
+    )
+    alternative_labels: List[str] = Field(
+        [], description="A list of alternative labels for the concept"
+    )
 
     @property
     def all_labels(self) -> List[str]:
