@@ -1,11 +1,13 @@
 import os
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from elasticsearch import Elasticsearch, NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from src.concept import Concept
+
+from . import default_page_size
 
 router = APIRouter(prefix="/concepts")
 
@@ -18,45 +20,92 @@ es = Elasticsearch(
 )
 
 
-class ConceptHit(Concept):
-    id: str
-    type: str = "concept"
-
-
 class ConceptResponse(BaseModel):
-    total: int
-    results: List[ConceptHit]
+    totalResults: int = Field(..., description="The total number of results")
+    nextPage: Optional[str] = Field(
+        None, description="The URL for the next page of results"
+    )
+    previousPage: Optional[str] = Field(
+        None, description="The URL for the previous page of results"
+    )
+    results: List[Concept]
 
 
-def elasticsearch_hit_to_concept_response(hit: Dict) -> ConceptHit:
-    return ConceptHit(id=hit["_id"], **hit["_source"])
+def elasticsearch_hit_to_concept_response(hit: Dict) -> Concept:
+    return Concept(id=hit["_id"], **hit["_source"])
 
 
 @router.get("/")
 async def read_concepts(
     request: Request,
-    page: int = Query(1, ge=1),
-    pageSize: int = Query(10, ge=1, le=100),
+    page: int = Query(1, ge=1, description="The page number to return"),
+    pageSize: int = Query(
+        10, ge=1, le=100, description="The number of items to return"
+    ),
+    query: str = Query(None, description="Search terms for full-text search"),
 ) -> ConceptResponse:
-    res = es.search(
-        index=INDEX_NAME,
-        body={"query": {"match_all": {}}},
-        from_=(page - 1) * pageSize,
-        size=pageSize,
-        sort=["_id"],
-    )
-    return {
-        "totalResults": res.get("hits", {}).get("total", {}).get("value", 0),
-        "nextPage": f"{request.url}?page={page+1}&pageSize={pageSize}",
-        "results": [
-            elasticsearch_hit_to_concept_response(hit)
-            for hit in res.get("hits", {}).get("hits", [])
-        ],
+    base_url = request.url.scheme + "://" + request.url.netloc + request.url.path
+
+    if query:
+        res = es.search(
+            index=INDEX_NAME,
+            body={
+                "query": {
+                    "multi_match": {
+                        "query": query,
+                        "fields": [
+                            "preferred_label",
+                            "alternative_labels",
+                            "description",
+                        ],
+                    }
+                }
+            },
+            from_=(page - 1) * pageSize,
+            size=pageSize,
+        )
+    else:
+        res = es.search(
+            index=INDEX_NAME,
+            body={"query": {"match_all": {}}},
+            from_=(page - 1) * pageSize,
+            size=pageSize,
+            sort=["_id"],
+        )
+
+    results = [
+        elasticsearch_hit_to_concept_response(hit)
+        for hit in res.get("hits", {}).get("hits", [])
+    ]
+
+    # add metadata to response
+    totalResults = res.get("hits", {}).get("total", {}).get("value", 0)
+    response = {
+        "totalResults": totalResults,
+        "results": results,
     }
+
+    if totalResults > page * pageSize:
+        nextpage = f"{base_url}?page={page + 1}"
+        if pageSize != default_page_size:
+            nextpage += f"&pageSize={pageSize}"
+        if query:
+            nextpage += f"&query={query}"
+        response["nextPage"] = nextpage
+
+    if page > 1:
+        previouspage = f"{base_url}?page={page - 1}"
+        if pageSize != default_page_size:
+            previouspage += f"&pageSize={pageSize}"
+        if query:
+            previouspage += f"&query={query}"
+        response["previousPage"] = previouspage
+
+    return response
 
 
 @router.get("/{identifier}")
-async def read_concept(identifier: str) -> ConceptHit:
+async def read_concept(identifier: str) -> Concept:
     try:
         res = es.get(index=INDEX_NAME, id=identifier)
     except NotFoundError as e:

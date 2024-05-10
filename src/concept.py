@@ -36,3 +36,7 @@ class Concept(BaseModel):
     def save(self, file_path: Union[str, Path]):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
+
+    @property
+    def type(self) -> str:
+        return "concept"
