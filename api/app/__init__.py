@@ -28,7 +28,7 @@ def format_response_metadata(
         if query:
             next_page += f"&query={query}"
         if concepts:
-            next_page += "".join([f"&concept={concept}" for concept in concepts])
+            next_page += f"&concepts={','.join(concepts)}"
         response["nextPage"] = next_page
 
     if page > 1:
@@ -38,7 +38,7 @@ def format_response_metadata(
         if query:
             previous_page += f"&query={query}"
         if concepts:
-            previous_page += "".join([f"&concept={concept}" for concept in concepts])
+            previous_page += f"&concepts={','.join(concepts)}"
         response["previousPage"] = previous_page
 
     return response

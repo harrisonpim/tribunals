@@ -35,21 +35,35 @@ class DocumentResponse(BaseModel):
 @router.get("/")
 async def read_documents(
     request: Request,
-    page: int = Query(1, ge=1, description="The page number to return"),
+    page: int = Query(default=1, ge=1, description="The page number to return"),
     pageSize: int = Query(
-        default_page_size, ge=1, le=100, description="The number of items to return"
+        default=default_page_size,
+        ge=1,
+        le=100,
+        description="The number of items to return",
     ),
     query: str = Query(None, description="Search terms for full-text search"),
-    concepts: Optional[List[str]] = Query(
-        alias="concept",
+    concepts: Optional[str] = Query(
         default=None,
         description=(
             "Filter documents by the IDs of the concepts that they mention. If "
             "multiple concept IDs are provided, documents may contain any of the "
-            "concepts, ie. the filter is treated as an OR operation"
+            "concepts, ie. the filter is treated as an OR operation. Concept IDs "
+            "should be provided as a comma-separated list."
         ),
+        openapi_examples={
+            "filter_by_a_single_concept": {
+                "summary": "Filter by a single concept",
+                "value": "68t56e7d",
+            },
+            "filter_by_multiple_concepts": {
+                "summary": "Filter by multiple concepts",
+                "value": "68t56e7d,vfbhyncy",
+            },
+        },
     ),
 ) -> DocumentResponse:
+    concepts = concepts.split(",") if concepts else None
     base_url = request.url.scheme + "://" + request.url.netloc + request.url.path
 
     # get results from Elasticsearch
