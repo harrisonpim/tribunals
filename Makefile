@@ -26,4 +26,4 @@ index:
 	poetry run python scripts/index_concepts.py
 
 api:
-	docker-compose up -d api
+	docker-compose up --build -d api

@@ -1,22 +1,16 @@
-FROM python:3.10 as requirements-stage
-
-COPY ./pyproject.toml /pyproject.toml
-COPY ./poetry.lock /poetry.lock
-
-RUN pip install poetry
-
-RUN poetry config virtualenvs.create false
-
-RUN poetry export -f requirements.txt --output /tmp/requirements.txt --without-hashes
-
 FROM python:3.10
 
 WORKDIR /api
 
-COPY --from=requirements-stage /tmp/requirements.txt /api/requirements.txt
+COPY ./pyproject.toml /api/pyproject.toml
+COPY ./poetry.lock /api/poetry.lock
 
-RUN pip install --no-cache-dir --upgrade -r /api/requirements.txt
+RUN pip install poetry
+
+RUN poetry install
+
+ENV PATH="/root/.local/bin:${PATH}"
 
 COPY ./api/app /api/app
 
-CMD ["fastapi", "run", "app/main.py", "--port", "3000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]

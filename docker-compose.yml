@@ -1,4 +1,3 @@
-version: "3"
 services:
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
@@ -29,6 +28,8 @@ services:
       - elasticsearch
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
+    volumes:
+      - ./src:/api/app/src
 
 volumes:
   esdata:
