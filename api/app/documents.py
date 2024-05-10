@@ -1,7 +1,7 @@
 import os
 from typing import Dict, List
 
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 
@@ -58,7 +58,10 @@ async def read_documents(
 
 @router.get("/{identifier}")
 async def read_document(identifier: str) -> DocumentHit:
-    res = es.get(index=INDEX_NAME, id=identifier)
-    if res["found"]:
-        return elasticsearch_hit_to_document_response(res)
-    raise HTTPException(status_code=404, detail="Item not found")
+    try:
+        res = es.get(index=INDEX_NAME, id=identifier)
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=404, detail=f"Document {identifier} not found"
+        ) from e
+    return elasticsearch_hit_to_document_response(res)
