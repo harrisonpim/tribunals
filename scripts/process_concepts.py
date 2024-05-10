@@ -1,3 +1,10 @@
+"""
+This script processes the raw concepts data and saves it as a list of Concept objects.
+
+The raw concepts data is read from data/raw/concepts.json. Each concept is parsed into a
+Concept object and saved as a json file in data/processed/concepts.
+"""
+
 import json
 from pathlib import Path
 
