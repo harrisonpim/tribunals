@@ -42,7 +42,9 @@ async def read_documents(
         le=100,
         description="The number of items to return",
     ),
-    query: str = Query(None, description="Search terms for full-text search"),
+    query: str = Query(
+        None, description="Search terms for full-text search", example="covid-19"
+    ),
     concepts: Optional[str] = Query(
         default=None,
         description=(
@@ -72,6 +74,7 @@ async def read_documents(
         "size": pageSize,
         "from_": (page - 1) * pageSize,
         "body": {"query": {"bool": {"must": [{"match_all": {}}]}}},
+        "sort": ["_score", "_id"],
     }
 
     if query:
@@ -83,16 +86,10 @@ async def read_documents(
                 }
             }
         ]
-    else:
-        query_parameters.update(
-            {
-                "sort": ["_id"],
-            }
-        )
     if concepts:
-        query_parameters["body"]["query"]["bool"]["must"].append(
+        query_parameters["body"]["query"]["bool"]["filter"] = [
             {"terms": {"concepts": concepts}}
-        )
+        ]
 
     res = es.search(**query_parameters)
 
