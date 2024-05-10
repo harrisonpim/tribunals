@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from elasticsearch import Elasticsearch, NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -29,10 +29,6 @@ class ConceptResponse(BaseModel):
         None, description="The URL for the previous page of results"
     )
     results: List[Concept]
-
-
-def elasticsearch_hit_to_concept_response(hit: Dict) -> Concept:
-    return Concept(id=hit["_id"], **hit["_source"])
 
 
 @router.get("/")
@@ -73,10 +69,7 @@ async def read_concepts(
             sort=["_id"],
         )
 
-    results = [
-        elasticsearch_hit_to_concept_response(hit)
-        for hit in res.get("hits", {}).get("hits", [])
-    ]
+    results = [Concept(**hit["_source"]) for hit in res.get("hits", {}).get("hits", [])]
     response = format_response_metadata(res, base_url, page, pageSize, query, results)
     return response
 
@@ -89,4 +82,4 @@ async def read_concept(identifier: str) -> Concept:
         raise HTTPException(
             status_code=404, detail=f"Concept {identifier} not found"
         ) from e
-    return elasticsearch_hit_to_concept_response(res)
+    return Concept(**res["_source"])

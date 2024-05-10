@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List, Optional, Union
 
 import spacy
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from src.identifiers import pretty_hash
 
@@ -118,6 +118,7 @@ class Document(BaseModel):
             )
         return sentence_spans
 
+    @computed_field(return_type=str)
     @property
     def id(self):
         return pretty_hash(
@@ -143,6 +144,7 @@ class Document(BaseModel):
     def __repr__(self) -> str:
         return f"Document(id={self.id}, title={self.title}, n_pages={len(self.pages)})"
 
+    @computed_field(return_type=str)
     @property
     def type(self) -> str:
         return "document"

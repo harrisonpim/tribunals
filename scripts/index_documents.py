@@ -77,13 +77,13 @@ if es.indices.exists(index=index_name):
 es.indices.create(index=index_name, settings=settings, mappings=mappings, ignore=400)
 console.print(f"✅ created index: {index_name}", style="green")
 
-data_dir = Path("data/raw/text")
+data_dir = Path("data/processed/documents")
 files = list(data_dir.glob("*.json"))
 
 for file in track(
     files, description="Indexing documents", console=console, transient=True
 ):
-    document = Document.load_raw(file)
+    document = Document.load(file)
     es.index(
         index=index_name,
         id=document.id,

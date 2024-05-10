@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from typing import List, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, computed_field
 
 from src.identifiers import pretty_hash
 
@@ -27,6 +27,7 @@ class Concept(BaseModel):
     def __repr__(self) -> str:
         return f"Concept({self.preferred_label})"
 
+    @computed_field(return_type=str)
     @property
     def id(self) -> str:
         return pretty_hash(self.preferred_label)
@@ -45,6 +46,7 @@ class Concept(BaseModel):
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(self.model_dump_json(indent=2))
 
+    @computed_field(return_type=str)
     @property
     def type(self) -> str:
         return "concept"

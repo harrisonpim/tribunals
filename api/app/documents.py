@@ -1,5 +1,5 @@
 import os
-from typing import Dict, List, Optional
+from typing import List, Optional
 
 from elasticsearch import Elasticsearch, NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
@@ -30,10 +30,6 @@ class DocumentResponse(BaseModel):
         None, description="The URL for the previous page of results"
     )
     results: List[Document]
-
-
-def elasticsearch_hit_to_document_response(hit: Dict) -> Document:
-    return Document(id=hit["_id"], **hit["_source"])
 
 
 @router.get("/")
@@ -68,8 +64,7 @@ async def read_documents(
 
     # format results
     results = [
-        elasticsearch_hit_to_document_response(hit)
-        for hit in res.get("hits", {}).get("hits", [])
+        Document(**hit["_source"]) for hit in res.get("hits", {}).get("hits", [])
     ]
     response = format_response_metadata(res, base_url, page, pageSize, query, results)
     return response
@@ -83,4 +78,4 @@ async def read_document(identifier: str) -> Document:
         raise HTTPException(
             status_code=404, detail=f"Document {identifier} not found"
         ) from e
-    return elasticsearch_hit_to_document_response(res)
+    return Document(**res["_source"])
