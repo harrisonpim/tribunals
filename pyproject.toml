@@ -8,8 +8,8 @@ packages = [{ include = "src" }, { include = "scripts" }]
 
 
 [tool.poetry.dependencies]
-python = "^3.10"
-elasticsearch = "7.17"
+python = ">=3.10,<3.12"
+elasticsearch = "8.5"
 ipykernel = "^6.29.4"
 nbformat = "^5.10.4"
 pandas = "^2.2.2"
@@ -27,6 +27,7 @@ spacy = "^3.7.4"
 en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl"}
 fastapi = "^0.110.3"
 uvicorn = "^0.29.0"
+argilla = "^1.28.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,16 +1,19 @@
 services:
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.20
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.5.3
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - xpack.security.enabled=false
     ports:
       - 9200:9200
     volumes:
-      - esdata:/usr/share/elasticsearch/data
+      - elasticsearch_data:/usr/share/elasticsearch/data
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:7.17.20
+    image: docker.elastic.co/kibana/kibana:8.5.3
     container_name: kibana
     ports:
       - 5601:5601
@@ -27,9 +30,25 @@ services:
     depends_on:
       - elasticsearch
     environment:
-      - ELASTICSEARCH_URL=http://elasticsearch:9200
+      ELASTICSEARCH_URL: http://elasticsearch:9200
     volumes:
       - ./src:/api/app/src
 
+  argilla:
+    # adapted from https://github.com/argilla-io/argilla/blob/a88c81879d7088413912e6c368eee8ae77e840a9/docker/docker-compose.yaml
+    image: argilla/argilla-server:latest
+    restart: unless-stopped
+    ports:
+      - 6900:6900
+    environment:
+      ARGILLA_HOME_PATH: /var/lib/argilla
+      ARGILLA_ELASTICSEARCH: http://elasticsearch:9200
+      ARGILLA_AUTH_SECRET_KEY: 2c83a0ab89f38298fd320e5e89e5b563a2fac7c855a9de080c96efb3b15e43f2
+    depends_on:
+      - elasticsearch
+    volumes:
+      - argilla_data:/var/lib/argilla
+
 volumes:
-  esdata:
+  elasticsearch_data:
+  argilla_data:
