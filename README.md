@@ -1,12 +1,9 @@
 # Employment appeal tribunal decisions
 
-Scraping tribunal decision docs from [gov.uk](https://www.gov.uk/employment-appeal-tribunal-decisions) and making them super searchable
+Scraping tribunal decision docs from [gov.uk](https://www.gov.uk/employment-appeal-tribunal-decisions) and making them super searchable.
 
+This project is written in python, with dependencies managed by poetry. Core jobs and services are managed by a [Makefile](./Makefile) and a [docker-compose.yml](./docker-compose.yml) file.
 
-## Usage
+## Getting started
 
-- `make install` to install dependencies
-- `make scrape_pdfs` to scrape pdfs from gov.uk
-- `make parse_pdfs` to extract text from pdfs
-- `make index` to index documents and concepts into elasticsearch
-- `make api` to create an api for querying the indices
+Start by running `make install` to install the project dependencies, and then take a look at the other available core commands with `make help`. This should give you a good idea of the project structure and the overall workflow. For further details, take a look at the [docs](./docs) or [the docstrings for the individual scripts](./scripts).
