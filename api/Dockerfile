@@ -7,7 +7,7 @@ COPY ./poetry.lock /api/poetry.lock
 
 RUN pip install poetry
 
-RUN poetry install
+RUN poetry install --with api
 
 ENV PATH="/root/.local/bin:${PATH}"
 

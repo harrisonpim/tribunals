@@ -1,6 +1,6 @@
 # Employment appeal tribunal decisions
 
-Scraping tribunal decision docs from [gov.uk](https://www.gov.uk/employment-appeal-tribunal-decisions) and making them super searchable.
+Scraping tribunal decision documents from [gov.uk](https://www.gov.uk/employment-appeal-tribunal-decisions) and making them super searchable.
 
 This project is written in python, with dependencies managed by poetry. Core jobs and services are managed by a [Makefile](./Makefile) and a [docker-compose.yml](./docker-compose.yml) file.
 
