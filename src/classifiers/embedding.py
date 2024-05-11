@@ -30,7 +30,7 @@ class EmbeddingClassifier(Classifier):
         outputs = self.model(**inputs)
         return outputs.last_hidden_state.mean(dim=1)
 
-    def predict(self, document: Document, threshold=0.9) -> List[Span]:
+    def predict(self, document: Document, threshold=0.8) -> List[Span]:
         spans = []
         for span in document.sentence_spans:
             text = document.text[span.start_index : span.end_index]

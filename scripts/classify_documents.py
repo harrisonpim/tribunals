@@ -23,7 +23,7 @@ data_dir = Path("./data")
 model_dir = data_dir / "models"
 model_paths = list(model_dir.glob("*.pkl"))
 classifiers = [
-    Classifier.load(model_dir / file.stem)
+    Classifier.load(file)
     for file in track(
         model_paths, description="Loading classifiers", console=console, transient=True
     )
@@ -40,8 +40,8 @@ documents = [
 ]
 console.print(f"📄 Loaded {len(documents)} documents", style="green")
 
-
-documents_with_concepts = []
+n_documents_with_concepts = 0
+n_concepts_found = 0
 for document in track(
     documents,
     description="Searching for concepts in documents",
@@ -52,15 +52,22 @@ for document in track(
         spans = classifier.predict(document)
         document.concept_spans.extend(spans)
     if document.concept_spans:
-        documents_with_concepts.append(document)
+        n_documents_with_concepts += 1
+        n_concepts_found += len(document.concept_spans)
 
 console.print(
-    f"🔍 Found concepts in {len(documents_with_concepts)} documents", style="green"
+    f"🔍 Found {n_concepts_found} concepts in {n_documents_with_concepts} documents",
+    style="green",
 )
 
 documents_dir = data_dir / "processed" / "documents"
 documents_dir.mkdir(parents=True, exist_ok=True)
 for file in documents_dir.glob("*"):
     file.unlink()
-for document in documents_with_concepts:
+for document in track(
+    documents,
+    description="Saving documents with concepts",
+    console=console,
+    transient=True,
+):
     document.save(documents_dir / f"{document.id}.json")
