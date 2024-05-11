@@ -19,6 +19,12 @@ parse_pdfs:
 process_concepts:
 	poetry run python scripts/process_concepts.py
 
+classifiers:
+	poetry run python scripts/train_classifiers.py
+
+classify_documents:
+	poetry run python scripts/classify_documents.py
+
 elasticsearch:
 	docker-compose up -d elasticsearch
 

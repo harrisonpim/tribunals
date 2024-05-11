@@ -28,6 +28,7 @@ en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/down
 fastapi = "^0.110.3"
 uvicorn = "^0.29.0"
 argilla = "^1.28.0"
+setfit = "^1.0.3"
 
 [build-system]
 requires = ["poetry-core"]

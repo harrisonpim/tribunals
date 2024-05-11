@@ -9,6 +9,12 @@ class RegexClassifier(Classifier):
     """Classifier that uses regular expressions to find spans of text."""
 
     def predict(self, document: Document) -> List[Span]:
+        """
+        Predict spans in a document using regular expressions.
+
+        :param Document document: The document to classify
+        :return List[Span]: A list of spans in the document
+        """
         spans = []
         for label in self.concept.all_labels:
             pattern = r"\b{}\b".format(re.escape(label.lower()))

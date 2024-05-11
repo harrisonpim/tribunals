@@ -13,14 +13,23 @@ class ElasticsearchClassifier(Classifier):
     def __init__(
         self,
         concept: Concept,
-        index_name: str,
-        es_client: Elasticsearch = Elasticsearch(),
+        index_name: str = "documents",
+        es_client: Elasticsearch = Elasticsearch(
+            ["http://localhost:9200"], timeout=30, max_retries=10, retry_on_timeout=True
+        ),
     ):
         super().__init__(concept)
         self.es_client = es_client
         self.index_name = index_name
 
     def predict(self, document: Document) -> List[Span]:
+        """
+        Predict spans in a document by searching for the concept labels in a
+        pre-populated Elasticsearch index.
+
+        :param Document document: The document to classify
+        :return List[Span]: A list of spans in the document
+        """
         spans = []
         for search_term in self.concept.all_labels:
             results = self.es_client.search(
