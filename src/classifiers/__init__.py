@@ -20,8 +20,8 @@ class ClassifierFactory:
     @staticmethod
     def create(concept: Concept) -> Classifier:
         """
-        Create a classifier for a concept, whose level of sophistication is based on
-        the available data.
+        Create a classifier for a concept, whose level of sophistication is determined
+        by the available data.
 
         The factory will create a SetFitClassifier if labelled examples are available,
         an EmbeddingClassifier if there are a large number of labels, and a

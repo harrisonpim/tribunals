@@ -1,30 +1,17 @@
 import json
 import warnings
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union
 
 import spacy
-from pydantic import BaseModel, Field, computed_field
+from pydantic import BaseModel, Field, computed_field, model_validator
+from typing_extensions import Self
 
 from src.identifiers import pretty_hash
+from src.span import Span
 
 nlp = spacy.blank("en")
 nlp.add_pipe("sentencizer")
-
-
-class Span(BaseModel):
-    """A span of text within a document"""
-
-    start_index: int = Field(
-        ..., description="The start index of the span within the document text"
-    )
-    end_index: int = Field(
-        ..., description="The end index of the span within the document text"
-    )
-    identifier: Optional[str] = Field(
-        None,
-        description="An optional identifier for the span, if it refers to a concept",
-    )
 
 
 class Document(BaseModel):
@@ -45,16 +32,17 @@ class Document(BaseModel):
         [], description="A list of spans representing the sentences within the document"
     )
 
-    def __init__(self, parse: bool = True, **data):
+    def __init__(self, parse_sentences: bool = True, **data):
         super().__init__(**data)
-        if parse:
+        if parse_sentences:
             self.sentence_spans = self._get_sentence_spans()
 
     @classmethod
-    def load_raw(cls, file: Union[str, Path], parse: bool = True):
+    def load_raw(cls, file: Union[str, Path], parse_sentences: bool = True):
         """Loads a document from a json file of raw text
 
         :param Union[str, Path] file: The path to the json file
+        :param bool parse_sentences: Whether to split the document text into sentences
         :raises ValueError: If the file is not a json file
         :return Document: The loaded document
         """
@@ -73,13 +61,19 @@ class Document(BaseModel):
             page_spans.append(Span(start_index=index, end_index=index + len(page)))
             index += len(page)
 
-        return cls(title=title, text=text, page_spans=page_spans, parse=parse)
+        return cls(
+            title=title,
+            text=text,
+            page_spans=page_spans,
+            parse_sentences=parse_sentences,
+        )
 
     @classmethod
-    def load(cls, file: Union[str, Path]):
+    def load(cls, file: Union[str, Path], parse_sentences: bool = True):
         """Loads a document from a json file with pre-structured document data
 
         :param Union[str, Path] file: The path to the json file
+        :param bool parse_sentences: Whether to split the document text into sentences
         :raises ValueError: If the file is not a json file
         :return Document: The loaded document
         """
@@ -90,7 +84,7 @@ class Document(BaseModel):
         with open(file, "r", encoding="utf-8") as f:
             data = json.load(f)
 
-        return cls(**data)
+        return cls(**data, parse_sentences=parse_sentences)
 
     def save(self, file: Union[str, Path]):
         """Saves the document to a file
@@ -122,7 +116,7 @@ class Document(BaseModel):
     @property
     def id(self):
         return pretty_hash(
-            {"title": self.title, "text": self.text, "n_pages": len(self.pages)}
+            {"title": self.title, "text": self.text, "n_pages": len(self.page_spans)}
         )
 
     @property
@@ -149,3 +143,11 @@ class Document(BaseModel):
     @property
     def type(self) -> str:
         return "document"
+
+    @model_validator(mode="after")
+    def validate_spans(self) -> Self:
+        """Ensures that all spans are within the bounds of the document text"""
+        for span in self.page_spans + self.concept_spans + self.sentence_spans:
+            if span.start_index < 0 or span.end_index > len(self.text):
+                raise ValueError(f"Span {span} is out of bounds of the text")
+        return self

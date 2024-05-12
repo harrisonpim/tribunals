@@ -19,9 +19,6 @@ class Concept(BaseModel):
     alternative_labels: List[str] = Field(
         [], description="A list of alternative labels for the concept"
     )
-    examples: List[str] = Field(
-        [], description="Positive examples of the concept in passages of text"
-    )
 
     @property
     def all_labels(self) -> List[str]:
@@ -53,3 +50,7 @@ class Concept(BaseModel):
     @property
     def type(self) -> str:
         return "concept"
+
+    @property
+    def examples(self) -> List[str]:
+        raise NotImplementedError
