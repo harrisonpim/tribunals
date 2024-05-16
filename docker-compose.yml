@@ -45,7 +45,8 @@ services:
     environment:
       ARGILLA_HOME_PATH: /var/lib/argilla
       ARGILLA_ELASTICSEARCH: http://elasticsearch:9200
-      ARGILLA_AUTH_SECRET_KEY: 2c83a0ab89f38298fd320e5e89e5b563a2fac7c855a9de080c96efb3b15e43f2
+    env_file:
+      - .env
     depends_on:
       - elasticsearch
     volumes:

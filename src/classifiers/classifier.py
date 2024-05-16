@@ -4,7 +4,8 @@ from pathlib import Path
 from typing import List, Union
 
 from src.concept import Concept
-from src.document import Document, Span
+from src.document import Document
+from src.span import Span
 
 
 class Classifier(ABC):

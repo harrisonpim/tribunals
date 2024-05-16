@@ -29,7 +29,7 @@ class Span(BaseModel):
         """Ensures that the start index is less than the end index"""
         if self.start_index > self.end_index:
             raise ValueError(
-                "The start index must be less than the end index "
+                "The start index must be less than the end index."
                 f"(got start_index={self.start_index}, end_index={self.end_index})"
             )
         return self

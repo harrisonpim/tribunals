@@ -6,7 +6,8 @@ from transformers import AutoModel, AutoTokenizer
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
-from src.document import Document, Span
+from src.document import Document
+from src.span import Span
 
 
 class EmbeddingClassifier(Classifier):

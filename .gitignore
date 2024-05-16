@@ -138,3 +138,6 @@ data/**/*
 !**/README.md
 !data/raw/concepts.json
 .DS_Store
+
+# Ignore all .env files
+*.env

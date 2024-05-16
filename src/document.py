@@ -1,7 +1,7 @@
 import json
 import warnings
 from pathlib import Path
-from typing import List, Union
+from typing import List, Optional, Union
 
 import spacy
 from pydantic import BaseModel, Field, computed_field, model_validator
@@ -19,17 +19,22 @@ class Document(BaseModel):
 
     title: str = Field(..., description="The title of the document")
     text: str = Field(..., description="The complete text of the document")
+    summary: Optional[str] = Field(
+        default=None,
+        description="An LLM-generated summary of the document",
+    )
     page_spans: List[Span] = Field(
-        [], description="A list of spans representing the pages of the document"
+        default=[], description="A list of spans representing the pages of the document"
     )
     concept_spans: List[Span] = Field(
-        [],
+        default=[],
         description=(
             "A list of spans representing appearances of concepts within the document"
         ),
     )
     sentence_spans: List[Span] = Field(
-        [], description="A list of spans representing the sentences within the document"
+        default=[],
+        description="A list of spans representing the sentences within the document",
     )
 
     def __init__(self, parse_sentences: bool = True, **data):
@@ -58,7 +63,9 @@ class Document(BaseModel):
         page_spans = []
         index = 0
         for page in data:
-            page_spans.append(Span(start_index=index, end_index=index + len(page)))
+            page_spans.append(
+                Span(start_index=index, end_index=index + len(page), type="page")
+            )
             index += len(page)
 
         return cls(
@@ -108,7 +115,11 @@ class Document(BaseModel):
         sentence_spans = []
         for sent in doc.sents:
             sentence_spans.append(
-                Span(start_index=sent.start_char, end_index=sent.end_char)
+                Span(
+                    start_index=sent.start_char,
+                    end_index=sent.end_char,
+                    type="sentence",
+                )
             )
         return sentence_spans
 

@@ -4,7 +4,8 @@ from setfit import SetFitModel
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
-from src.document import Document, Span
+from src.document import Document
+from src.span import Span
 
 
 class SetFitClassifier(Classifier):

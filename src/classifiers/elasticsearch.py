@@ -4,7 +4,8 @@ from elasticsearch import Elasticsearch
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
-from src.document import Document, Span
+from src.document import Document
+from src.span import Span
 
 
 class ElasticsearchClassifier(Classifier):
@@ -66,6 +67,7 @@ class ElasticsearchClassifier(Classifier):
                         start_index=start_index,
                         end_index=end_index,
                         identifier=self.concept.id,
+                        type="concept",
                     )
                 )
 

@@ -2,7 +2,8 @@ import re
 from typing import List
 
 from src.classifiers.classifier import Classifier
-from src.document import Document, Span
+from src.document import Document
+from src.span import Span
 
 
 class RegexClassifier(Classifier):
@@ -24,6 +25,7 @@ class RegexClassifier(Classifier):
                         start_index=match.start(),
                         end_index=match.end(),
                         identifier=self.concept.id,
+                        type="concept",
                     )
                 )
         return spans
