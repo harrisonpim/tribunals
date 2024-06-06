@@ -130,7 +130,7 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-# Project 
+# Project
 data/**/*
 !data/**/
 !**/data.csv
@@ -141,3 +141,6 @@ data/**/*
 
 # Ignore all .env files
 *.env
+
+# Jetbrains
+.idea
