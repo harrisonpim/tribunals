@@ -137,7 +137,7 @@ data/**/*
 !**/.gitkeep
 !**/README.md
 !data/raw/concepts.json
-!data/raw/known_search_terms.json
+!data/raw/search_terms.json
 .DS_Store
 
 # Ignore all .env files
