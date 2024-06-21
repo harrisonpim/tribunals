@@ -5,6 +5,7 @@ from elasticsearch import Elasticsearch
 from rich import box, console, progress, table
 
 from src.document import Document
+from src.evaluation.ndcg import NDCG
 from src.search.core import DocumentSearchEngine
 
 console = console.Console()
@@ -33,20 +34,40 @@ if not search_engine.elasticsearch.indices.exists(index=index_name):
 # load the relevance judgements
 with open("data/eval/relevance/judgements.json", "r") as f:
     judgements = json.load(f)
-n_judgements = sum([len(group) for group in judgements.values()])
-console.print(f"📚 Loaded {n_judgements} relevance judgements")
 
-# run an example query
-search_terms = "covid 19"
-console.print(f"🔍 Searching for '{search_terms}'")
-results = search_engine.search(search_terms, n=10)
-console.print(f"🫡 Found {len(results)} results")
+console.print(
+    f"📚 Loaded {sum([len(group) for group in judgements.values()])} "
+    f"relevance judgements across {len(judgements)} search terms"
+)
 
-# create a rich table to display the search results
-table = table.Table(box=box.ROUNDED, show_lines=True)
-table.add_column("ID", justify="right")
-table.add_column("Summary")
-for result in results:
-    table.add_row(str(result.id), str(result.summary).strip())
+# evaluate the search engine against the gold-standard relevance judgements
+table = table.Table(box=box.ROUNDED)
+table.add_column("Search terms", justify="left")
+table.add_column("k=5", justify="center")
+table.add_column("k=10", justify="center")
+
+scores_at_5 = []
+scores_at_10 = []
+for search_terms, relevance_scores in judgements.items():
+    search_results = search_engine.search(search_terms=search_terms, n=1000)
+    ndcg = NDCG(
+        relevance_scores=relevance_scores,
+        search_result_ids=[doc.id for doc in search_results],
+    )
+
+    ndcg_at_5 = ndcg.compute(5)
+    scores_at_5.append(ndcg_at_5)
+
+    ndcg_at_10 = ndcg.compute(10)
+    scores_at_10.append(ndcg_at_10)
+
+    table.add_row(search_terms, f"{ndcg_at_5:.2f}", f"{ndcg_at_10:.2f}")
+
+# add a footer with the overall NDCG scores
+table.add_row(
+    "Overall",
+    f"{sum(scores_at_5) / len(scores_at_5):.2f}",
+    f"{sum(scores_at_10) / len(scores_at_10):.2f}",
+)
 
 console.print(table)
