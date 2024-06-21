@@ -182,20 +182,9 @@ for term in track(
 console.print(f"💾 Saved relevance judgements to {relevance_eval_dir}", style="green")
 
 # Print some rough summary statistics about the relevance judgements
-num_judgements = sum(len(judgements[term]) for term in judgements)
-num_relevant = sum(
-    sum(1 for relevance in judgements[term].values() if relevance > 0)
-    for term in judgements
-)
-num_highly_relevant = sum(
-    sum(1 for relevance in judgements[term].values() if relevance == 2)
-    for term in judgements
-)
-num_irrelevant = sum(
-    sum(1 for relevance in judgements[term].values() if relevance == 0)
-    for term in judgements
-)
-console.print(f"📊 Number of judgements: {num_judgements}")
-console.print(f"📊 Number of relevant documents: {num_relevant}")
-console.print(f"📊 Number of highly relevant documents: {num_highly_relevant}")
-console.print(f"📊 Number of irrelevant documents: {num_irrelevant}")
+judgements = [
+    relevance for term in judgements for relevance in judgements[term].values()
+]
+console.print(f"📊 Number of judgements: {len(judgements)}")
+console.print(f"📊 Number of irrelevant documents: {judgements.count(0)}")
+console.print(f"📊 Number of highly relevant documents: {judgements.count(2)}")

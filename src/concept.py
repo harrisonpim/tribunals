@@ -53,4 +53,4 @@ class Concept(BaseModel):
 
     @property
     def examples(self) -> List[str]:
-        raise NotImplementedError
+        return []
