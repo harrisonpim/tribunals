@@ -1,39 +1,29 @@
-import os
-from typing import List, Optional
+from typing import Optional
 
-from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch import NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
-from pydantic import BaseModel, Field
 
 from src.document import Document
+from src.search.core import DocumentSearchEngine
 
-from . import default_page_size, format_response_metadata
+from . import (
+    APIResponse,
+    default_page_size,
+    elasticsearch_instance,
+    get_base_url,
+    get_next_page_url,
+    get_previous_page_url,
+)
 
 router = APIRouter(prefix="/documents")
 
-INDEX_NAME = "documents"
-
-es = Elasticsearch(
-    hosts=[os.getenv("ELASTICSEARCH_URL", "localhost:9200")],
-    timeout=30,
-    max_retries=10,
-    retry_on_timeout=True,
+search_engine = DocumentSearchEngine(
+    elasticsearch=elasticsearch_instance, index_name="documents"
 )
 
 
-class DocumentResponse(BaseModel):
-    totalResults: int = Field(..., description="The total number of results")
-    nextPage: Optional[str] = Field(
-        None, description="The URL for the next page of results"
-    )
-    previousPage: Optional[str] = Field(
-        None, description="The URL for the previous page of results"
-    )
-    results: List[Document]
-
-
 @router.get("/")
-async def read_documents(
+async def get_documents(
     request: Request,
     page: int = Query(default=1, ge=1, description="The page number to return"),
     pageSize: int = Query(
@@ -64,51 +54,32 @@ async def read_documents(
             },
         },
     ),
-) -> DocumentResponse:
-    concepts = concepts.split(",") if concepts else None
-    base_url = request.url.scheme + "://" + request.url.netloc + request.url.path
-
-    # get results from Elasticsearch
-    query_parameters = {
-        "index": INDEX_NAME,
-        "size": pageSize,
-        "from_": (page - 1) * pageSize,
-        "body": {"query": {"bool": {"must": [{"match_all": {}}]}}},
-        "sort": ["_score", "_id"],
-    }
-
-    if query:
-        query_parameters["body"]["query"]["bool"]["must"] = [
-            {
-                "multi_match": {
-                    "query": query,
-                    "fields": ["title", "text"],
-                }
-            }
-        ]
-    if concepts:
-        query_parameters["body"]["query"]["bool"]["filter"] = [
-            {"terms": {"concepts": concepts}}
-        ]
-
-    res = es.search(**query_parameters)
-
-    # format results
-    results = [
-        Document(**hit["_source"]) for hit in res.get("hits", {}).get("hits", [])
-    ]
-    response = format_response_metadata(
-        res, base_url, page, pageSize, query, results, concepts
+) -> APIResponse:
+    parsed_concepts = concepts.split(",") if concepts else []
+    base_url = get_base_url(request)
+    next_page = get_next_page_url(
+        base_url, page, pageSize, query=query, concepts=concepts
     )
-    return response
+    previous_page = get_previous_page_url(
+        base_url, page, pageSize, query=query, concepts=concepts
+    )
+    search_response = search_engine.search(
+        search_terms=query, page=page, page_size=pageSize, concepts=parsed_concepts
+    )
+
+    return APIResponse(
+        totalResults=search_response.total,
+        nextPage=next_page if search_response.total > page * pageSize else None,
+        previousPage=previous_page if page > 1 else None,
+        results=search_response.results,
+    )
 
 
 @router.get("/{identifier}")
-async def read_document(identifier: str) -> Document:
+async def get_document(identifier: str) -> Document:
     try:
-        res = es.get(index=INDEX_NAME, id=identifier)
+        return search_engine.get_item(identifier)
     except NotFoundError as e:
         raise HTTPException(
             status_code=404, detail=f"Document {identifier} not found"
         ) from e
-    return Document(**res["_source"])

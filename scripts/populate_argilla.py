@@ -112,11 +112,15 @@ for concept in track(
     )
     created_datasets.append(concept.preferred_label)
 
-console.print("📚 Skipped concepts with no candidate passages:", style="green")
-for concept in skipped_datasets:
-    console.print(f"  • {concept}")
-console.print("📚 Created Argilla objects for the following concepts:", style="green")
-for concept in created_datasets:
-    console.print(f"  • {concept}")
+if skipped_datasets:
+    console.print("📚 Skipped concepts with no candidate passages:", style="green")
+    for concept in skipped_datasets:
+        console.print(f"  • {concept}")
+if created_datasets:
+    console.print(
+        "📚 Created Argilla objects for the following concepts:", style="green"
+    )
+    for concept in created_datasets:
+        console.print(f"  • {concept}")
 
 console.print("🎉 All done! You can now use Argilla to start labelling.", style="green")

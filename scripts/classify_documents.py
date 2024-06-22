@@ -31,9 +31,9 @@ classifiers = [
 console.print(f"🤖 Loaded {len(classifiers)} classifiers", style="green")
 
 raw_text_dir = data_dir / "raw" / "text"
-document_paths = list(raw_text_dir.glob("*.json"))
+document_paths = list(raw_text_dir.glob("*.json"))[:250]
 documents = [
-    Document.load_raw(file, parse=False)
+    Document.load_raw(file, parse_sentences=True)
     for file in track(
         document_paths, description="Loading documents", console=console, transient=True
     )

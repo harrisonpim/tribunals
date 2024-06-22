@@ -39,7 +39,7 @@ class Document(BaseModel):
 
     def __init__(self, parse_sentences: bool = True, **data):
         super().__init__(**data)
-        if parse_sentences:
+        if len(self.sentence_spans) == 0 and parse_sentences:
             self.sentence_spans = self._get_sentence_spans()
 
     @classmethod

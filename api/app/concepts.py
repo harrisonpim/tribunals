@@ -1,85 +1,51 @@
-import os
-from typing import List, Optional
-
-from elasticsearch import Elasticsearch, NotFoundError
+from elasticsearch import NotFoundError
 from fastapi import APIRouter, HTTPException, Query, Request
-from pydantic import BaseModel, Field
 
 from src.concept import Concept
+from src.search.core import ConceptSearchEngine
 
-from . import format_response_metadata
+from . import (
+    APIResponse,
+    elasticsearch_instance,
+    get_base_url,
+    get_next_page_url,
+    get_previous_page_url,
+)
 
 router = APIRouter(prefix="/concepts")
 
-INDEX_NAME = "concepts"
-es = Elasticsearch(
-    hosts=[os.getenv("ELASTICSEARCH_URL", "localhost:9200")],
-    timeout=30,
-    max_retries=10,
-    retry_on_timeout=True,
+search_engine = ConceptSearchEngine(
+    elasticsearch=elasticsearch_instance, index_name="concepts"
 )
 
 
-class ConceptResponse(BaseModel):
-    totalResults: int = Field(..., description="The total number of results")
-    nextPage: Optional[str] = Field(
-        None, description="The URL for the next page of results"
-    )
-    previousPage: Optional[str] = Field(
-        None, description="The URL for the previous page of results"
-    )
-    results: List[Concept]
-
-
 @router.get("/")
-async def read_concepts(
+async def get_concepts(
     request: Request,
     page: int = Query(1, ge=1, description="The page number to return"),
     pageSize: int = Query(
         10, ge=1, le=100, description="The number of items to return"
     ),
     query: str = Query(None, description="Search terms for full-text search"),
-) -> ConceptResponse:
-    base_url = request.url.scheme + "://" + request.url.netloc + request.url.path
+) -> APIResponse:
+    base_url = get_base_url(request)
+    next_page = get_next_page_url(base_url, page, pageSize, query=query)
+    previous_page = get_previous_page_url(base_url, page, pageSize, query=query)
+    search_response = search_engine.search(query, page, pageSize)
 
-    if query:
-        res = es.search(
-            index=INDEX_NAME,
-            body={
-                "query": {
-                    "multi_match": {
-                        "query": query,
-                        "fields": [
-                            "preferred_label",
-                            "alternative_labels",
-                            "description",
-                        ],
-                    }
-                }
-            },
-            from_=(page - 1) * pageSize,
-            size=pageSize,
-        )
-    else:
-        res = es.search(
-            index=INDEX_NAME,
-            body={"query": {"match_all": {}}},
-            from_=(page - 1) * pageSize,
-            size=pageSize,
-            sort=["_id"],
-        )
-
-    results = [Concept(**hit["_source"]) for hit in res.get("hits", {}).get("hits", [])]
-    response = format_response_metadata(res, base_url, page, pageSize, query, results)
-    return response
+    return APIResponse(
+        totalResults=search_response.total,
+        nextPage=next_page if search_response.total > page * pageSize else None,
+        previousPage=previous_page if page > 1 else None,
+        results=search_response.results,
+    )
 
 
 @router.get("/{identifier}")
-async def read_concept(identifier: str) -> Concept:
+async def get_concept(identifier: str) -> Concept:
     try:
-        res = es.get(index=INDEX_NAME, id=identifier)
+        return search_engine.get_item(identifier)
     except NotFoundError as e:
         raise HTTPException(
             status_code=404, detail=f"Concept {identifier} not found"
         ) from e
-    return Concept(**res["_source"])

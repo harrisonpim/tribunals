@@ -1,9 +1,6 @@
-import os
-
-from elasticsearch import Elasticsearch
 from fastapi import FastAPI, HTTPException
 
-from . import concepts, documents
+from . import concepts, documents, elasticsearch_instance
 
 app = FastAPI(
     title="Employment Appeal Tribunals API",
@@ -16,23 +13,16 @@ app = FastAPI(
 app.include_router(concepts.router)
 app.include_router(documents.router)
 
-es = Elasticsearch(
-    hosts=[os.getenv("ELASTICSEARCH_URL", "localhost:9200")],
-    timeout=30,
-    max_retries=10,
-    retry_on_timeout=True,
-)
-
 
 @app.get("/health-check")
 async def health_check() -> dict:
-    if not es.ping():
+    if not elasticsearch_instance.ping():
         raise HTTPException(status_code=503, detail="Service unavailable")
 
     missing_indices = [
         index
         for index in ["concepts", "documents"]
-        if not es.indices.exists(index=index)
+        if not elasticsearch_instance.indices.exists(index=index)
     ]
 
     if missing_indices:
