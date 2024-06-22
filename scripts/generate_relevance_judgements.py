@@ -157,7 +157,7 @@ for term in track(
         )
 
         message = client.messages.create(
-            model="claude-3-haiku-20240307",
+            model="claude-3-5-sonnet-20240620",
             max_tokens=1000,
             temperature=0,
             system=system_prompt,

@@ -49,7 +49,8 @@ table.add_column("k=10", justify="center")
 scores_at_5 = []
 scores_at_10 = []
 for search_terms, relevance_scores in judgements.items():
-    search_results = search_engine.search(search_terms=search_terms, n=1000)
+    search_response = search_engine.search(search_terms=search_terms, page_size=10)
+    search_results = search_response.results
     ndcg = NDCG(
         relevance_scores=relevance_scores,
         search_result_ids=[doc.id for doc in search_results],
