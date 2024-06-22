@@ -44,10 +44,10 @@ def get_next_page_url(base_url: str, page: int, page_size: int, **kwargs) -> str
     kwargs["page"] = page + 1
     if page_size != default_page_size:
         kwargs["pageSize"] = page_size
-    for key, value in list(kwargs.keys()):
+    for key, value in list(kwargs.items()):
         if isinstance(value, list):
             kwargs[key] = ",".join(value)
-    return base_url + "?" + "&".join(f"{k}={v}" for k, v in kwargs.items())
+    return base_url + "?" + "&".join(f"{k}={v}" for k, v in kwargs.items() if v)
 
 
 def get_previous_page_url(base_url: str, page: int, page_size: int, **kwargs) -> str:
@@ -57,4 +57,4 @@ def get_previous_page_url(base_url: str, page: int, page_size: int, **kwargs) ->
     for key, value in list(kwargs.items()):
         if isinstance(value, list):
             kwargs[key] = ",".join(value)
-    return base_url + "?" + "&".join(f"{k}={v}" for k, v in kwargs.items())
+    return base_url + "?" + "&".join(f"{k}={v}" for k, v in kwargs.items() if v)
