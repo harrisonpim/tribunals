@@ -4,7 +4,7 @@ services:
     container_name: elasticsearch
     environment:
       - discovery.type=single-node
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
       - cluster.routing.allocation.disk.threshold_enabled=false
       - xpack.security.enabled=false
     ports:
@@ -26,7 +26,7 @@ services:
       dockerfile: ./api/Dockerfile
     container_name: api
     ports:
-      - 3000:3000
+      - 8000:8000
     depends_on:
       - elasticsearch
     environment:
