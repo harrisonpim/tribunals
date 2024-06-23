@@ -1,4 +1,4 @@
-.PHONY: help install test scrape_pdfs parse_pdfs process_concepts classifiers classify_documents elasticsearch index api argilla populate_argilla
+.PHONY: help install test scrape_pdfs parse_pdfs process_concepts classifiers classify_documents elasticsearch index api argilla populate_argilla webapp
 
 help: ## Show this help message
 	@echo "Usage: make [target]"
@@ -34,8 +34,7 @@ elasticsearch: ## Start a local elasticsearch instance
 	docker compose up --build -d elasticsearch
 
 index: ## Index the documents and concepts into elasticsearch. Depends on a local running elasticsearch instance
-	poetry run python scripts/index_documents.py
-	poetry run python scripts/index_concepts.py
+	poetry run python scripts/index.py
 
 api: ## Run a local FastAPI app to query the elasticsearch index. Depends on a local running elasticsearch instance
 	docker compose up --build -d api
