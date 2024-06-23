@@ -45,3 +45,7 @@ argilla: ## Start a local argilla instance for manual concept labelling
 
 populate_argilla: ## Populate the argilla instance with candidate examples to label
 	poetry run python scripts/populate_argilla.py
+
+webapp: ## Run the webapp
+	yarn --cwd webapp install
+	yarn --cwd webapp start

@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import concepts, documents, elasticsearch_instance
 
@@ -9,6 +10,12 @@ app = FastAPI(
     docs_url="/",
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["GET"],
+    allow_headers=["*"],
+)
 
 app.include_router(concepts.router)
 app.include_router(documents.router)

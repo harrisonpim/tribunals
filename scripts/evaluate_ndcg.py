@@ -1,3 +1,17 @@
+"""
+Use a set of relevance judgements to evaluate search engine performance using NDCG.
+
+The relevance judgements are generated using the generate_relevance_judgements.py
+script, and are loaded from the data/eval/relevance/judgements.json file. This file
+contains a dictionary of search terms and relevance scores for a plausible set of search
+terms that a user might use to find documents in the corpus.
+
+The search engine is evaluated using the NDCG metric, which compares the ranking of the
+search engine in question with the ideal ranking of the search engine, according to the
+relevance scores. The NDCG@k metric is computed for k=5 and k=10, and the results are
+printed to the console.
+"""
+
 import json
 from pathlib import Path
 

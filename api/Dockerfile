@@ -15,4 +15,4 @@ COPY ./src/ /api/src/
 
 COPY ./api/app /api/app
 
-CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
