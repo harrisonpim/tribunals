@@ -1,20 +1,23 @@
 import os
+from typing import Optional
 
 from anthropic import Anthropic
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 
 def get_llm_response(prompt: str, model: str = "claude-3-5-haiku-20241022") -> str:
-    """
-    Get a response from the LLM using the Anthropic API.
+    """Get a response from an LLM using the Anthropic API"""
+    api_key: Optional[str] = os.getenv("ANTHROPIC_API_KEY")
+    if not api_key:
+        raise ValueError(
+            "ANTHROPIC_API_KEY environment variable not found. "
+            "Please set this in your .env file or environment."
+        )
 
-    Args:
-        prompt: The prompt to send to the model
-        model: The model to use, defaults to claude-3-5-haiku
-
-    Returns:
-        The model's response as a string
-    """
-    client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    client = Anthropic(api_key=api_key)
     llm_response = client.messages.create(
         model=model,
         messages=[{"role": "user", "content": prompt}],

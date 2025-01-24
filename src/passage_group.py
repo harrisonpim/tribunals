@@ -71,7 +71,7 @@ class PassageGroup(BaseModel):
     def __str__(self) -> str:
         return self.__repr__()
 
-    def generate_summary(self) -> str:
+    def summarise(self) -> str:
         """Generate a summary of the passage group"""
         if raw_passages := self.get_passages_at_zoom_level(0):
             return summarise(raw_passages)
