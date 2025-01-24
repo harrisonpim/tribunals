@@ -41,7 +41,6 @@ class Identifier(str):
         """Generate a deterministic identifier from the input arguments"""
         input_string = "".join([str(arg) for arg in args])
         hashed_data = hashlib.sha256(input_string.encode()).digest()
-        # Take exactly 8 bytes and map each to a valid character
         identifier = "".join(
             cls.characters[int(b % len(cls.characters))] for b in hashed_data[:8]
         )

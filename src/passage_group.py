@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from src.identifiers import Identifier
 from src.passage import ConceptMention, Passage
+from src.summarisation import summarise
 
 
 class PassageGroup(BaseModel):
@@ -70,7 +71,8 @@ class PassageGroup(BaseModel):
 
     def generate_summary(self) -> str:
         """Generate a summary of the passage group"""
-        if self.get_passages_at_zoom_level(0):
-            return "This is a summary of the raw text"
+        if sentences := self.get_passages_at_zoom_level(0):
+            text_to_summarise = "\n".join([sentence.text for sentence in sentences])
+            return summarise(text_to_summarise)
         else:
             raise ValueError("No passages to generate summary from")
