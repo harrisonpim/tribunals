@@ -1,53 +1,88 @@
 import json
 import warnings
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Union
 
-import spacy
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import Field, model_validator
 from typing_extensions import Self
 
-from src.identifiers import pretty_hash
-from src.span import Span
-
-nlp = spacy.blank("en")
-nlp.add_pipe("sentencizer")
+from src.chunking import split_text_into_sentences
+from src.passage import Page
+from src.passage_group import PassageGroup
 
 
-class Document(BaseModel):
-    """Base class for a document"""
+class Document(PassageGroup):
+    """A document containing text with spans"""
 
     title: str = Field(..., description="The title of the document")
-    text: str = Field(..., description="The complete text of the document")
-    summary: Optional[str] = Field(
-        default=None,
-        description="An LLM-generated summary of the document",
-    )
-    page_spans: List[Span] = Field(
-        default=[], description="A list of spans representing the pages of the document"
-    )
-    concept_spans: List[Span] = Field(
-        default=[],
-        description=(
-            "A list of spans representing appearances of concepts within the document"
-        ),
-    )
-    sentence_spans: List[Span] = Field(
-        default=[],
-        description="A list of spans representing the sentences within the document",
-    )
+    text: str = Field(..., description="The raw text of the document")
 
-    def __init__(self, parse_sentences: bool = True, **data):
-        super().__init__(**data)
-        if len(self.sentence_spans) == 0 and parse_sentences:
-            self.sentence_spans = self._get_sentence_spans()
+    @model_validator(mode="after")
+    def ensure_that_raw_text_passages_appear_in_document_text(self) -> Self:
+        raw_text_passages = [
+            passage for passage in self.passages if passage.zoom_level == 0
+        ]
+        for passage in raw_text_passages:
+            if passage.text not in self.text:
+                raise ValueError(
+                    f"Passage {passage.id} does not appear in the document"
+                )
+        return self
+
+    @model_validator(mode="after")
+    def ensure_that_passages_have_same_document_id_as_parent_document(self) -> Self:
+        for passage in self.passages:
+            if passage.document_id is None:
+                passage.document_id = self.id
+            elif passage.document_id != self.id:
+                raise ValueError(
+                    f"The document ID of passage {passage.id} ({passage.document_id}) "
+                    f"does not match the document ID ({self.id})"
+                )
+        return self
+
+    def __repr__(self) -> str:
+        n_pages = len(
+            [passage for passage in self.passages if isinstance(passage, Page)]
+        )
+        return f"{self.name}(id={self.id}, title={self.title}, n_pages={n_pages})"
 
     @classmethod
-    def load_raw(cls, file: Union[str, Path], parse_sentences: bool = True):
+    def _validate_path(cls, file: Union[str, Path]) -> None:
+        file = Path(file)
+        if file.suffix != ".json":
+            warnings.warn("File does not have .json extension")
+
+    @classmethod
+    def load(cls, file: Union[str, Path]) -> "Document":
+        """Loads a document from a json file with pre-structured document data
+
+        :param Union[str, Path] file: The path to the json file
+        :raises ValueError: If the file is not a json file
+        :return Document: The loaded document
+        """
+        cls._validate_path(file)
+        with open(file, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        return cls(**data)
+
+    def save(self, file: Union[str, Path]) -> None:
+        """Saves the document to a file
+
+        :param Union[str, Path] file: The path to save the document to
+        :param str format: The format to save the document in, defaults to "json"
+        :raises NotImplementedError: If the format is not supported
+        """
+        self._validate_path(file)
+        with open(file, "w", encoding="utf-8") as f:
+            f.write(self.model_dump_json(indent=2))
+
+    @classmethod
+    def load_from_raw(cls, file: Union[str, Path]) -> "Document":
         """Loads a document from a json file of raw text
 
         :param Union[str, Path] file: The path to the json file
-        :param bool parse_sentences: Whether to split the document text into sentences
         :raises ValueError: If the file is not a json file
         :return Document: The loaded document
         """
@@ -60,105 +95,21 @@ class Document(BaseModel):
 
         title = file.stem
         text = "".join(data)
-        page_spans = []
+
+        document = Document(title=title, text=text)
         index = 0
         for page in data:
-            page_spans.append(
-                Span(start_index=index, end_index=index + len(page), type="page")
+            document.passages.append(
+                Page(
+                    text=page,
+                    zoom_level=0,
+                    start_index=index,
+                    end_index=index + len(page),
+                )
             )
             index += len(page)
 
-        return cls(
-            title=title,
-            text=text,
-            page_spans=page_spans,
-            parse_sentences=parse_sentences,
-        )
+        sentences = split_text_into_sentences(document.text)
+        document.passages.extend(sentences)
 
-    @classmethod
-    def load(cls, file: Union[str, Path], parse_sentences: bool = True):
-        """Loads a document from a json file with pre-structured document data
-
-        :param Union[str, Path] file: The path to the json file
-        :param bool parse_sentences: Whether to split the document text into sentences
-        :raises ValueError: If the file is not a json file
-        :return Document: The loaded document
-        """
-        file = Path(file)
-        if file.suffix != ".json":
-            raise ValueError(f"File must be a json file: {file}")
-
-        with open(file, "r", encoding="utf-8") as f:
-            data = json.load(f)
-
-        return cls(**data, parse_sentences=parse_sentences)
-
-    def save(self, file: Union[str, Path]):
-        """Saves the document to a file
-
-        :param Union[str, Path] file: The path to save the document to
-        :param str format: The format to save the document in, defaults to "json"
-        :raises NotImplementedError: If the format is not supported
-        """
-        file = Path(file)
-        if file.suffix != ".json":
-            warnings.warn("File does not have .json extension")
-        with open(file, "w", encoding="utf-8") as f:
-            f.write(self.model_dump_json(indent=2))
-
-    def _get_sentence_spans(self):
-        """Get the spans of the sentences in the document
-
-        :return list[Span]: The spans of the sentences
-        """
-        doc = nlp(self.text)
-        sentence_spans = []
-        for sent in doc.sents:
-            sentence_spans.append(
-                Span(
-                    start_index=sent.start_char,
-                    end_index=sent.end_char,
-                    type="sentence",
-                )
-            )
-        return sentence_spans
-
-    @computed_field(return_type=str)
-    @property
-    def id(self):
-        return pretty_hash(
-            {"title": self.title, "text": self.text, "n_pages": len(self.page_spans)}
-        )
-
-    @property
-    def pages(self):
-        return [
-            self.text[span.start_index : span.end_index] for span in self.page_spans
-        ]
-
-    @property
-    def sentences(self):
-        return [
-            self.text[span.start_index : span.end_index] for span in self.sentence_spans
-        ]
-
-    @computed_field(return_type=List[str])
-    @property
-    def concepts(self):
-        return [span.identifier for span in self.concept_spans]
-
-    def __repr__(self) -> str:
-        return f"Document(id={self.id}, title={self.title}, n_pages={len(self.pages)})"
-
-    @computed_field(return_type=str)
-    @property
-    def type(self) -> str:
-        return "document"
-
-    @model_validator(mode="after")
-    def validate_spans(self) -> Self:
-        """Ensures that all spans are within the bounds of the document text"""
-        for span in self.page_spans + self.concept_spans + self.sentence_spans:
-            if span.start_index < 0 or span.end_index > len(self.text):
-                raise ValueError(f"Span {span} is out of bounds of the text")
-        return self
+        return document

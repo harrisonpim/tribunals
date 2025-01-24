@@ -1,28 +1,47 @@
 import hashlib
+import re
+from typing import Any
 
 
-def pretty_hash(input_data: dict) -> str:
+class Identifier(str):
     """
-    Generates a neat identifier using eight unambiguous lowercase and numeric characters
+    An identifier that uses eight unambiguous lowercase and numeric characters.
 
-    The resulting identifiers look something like this: ["2sgknw32", "gg7h2j2s", ...]
-
-    With a set of 31 possible characters and 8 positions, this function is able to
-    generate 31^8 = 852,891,037,441 unique identifiers. This should be more than enough
-    for most use cases!
-
-    :param dict input_data: the data to be hashed
-    :return str: the identifier
+    Identifiers look something like: ["2sgknw32", "gg7h2j2s", ...]
+    With 31 possible characters and 8 positions, this can generate
+    31^8 = 852,891,037,441 unique ids.
     """
+
+    # Excludes "i", "l", "1", "o", "0" to minimize ambiguity
     characters = "abcdefghjkmnpqrstuvwxyz23456789"
+    regex = rf"^[{characters}]{8}$"
 
-    input_string = str(input_data)
-    hash = hashlib.sha256(input_string.encode()).digest()
+    @classmethod
+    def _validate(cls, value: str, field: Any = None) -> str:
+        """Validate that the identifier matches the expected pattern"""
+        if not re.match(cls.regex, value):
+            raise ValueError(
+                f"{value} is not a valid identifier. "
+                f"Must be 8 characters long using only {cls.characters}"
+            )
+        return value
 
-    output = []
-    for i in range(8):
-        hash_byte = hash[i]
-        character_index = hash_byte % len(characters)
-        output.append(characters[character_index])
+    @classmethod
+    def __get_validators__(cls):
+        """Return a generator of validators"""
+        yield cls._validate
 
-    return "".join(output)
+    def __new__(cls, value: str) -> "Identifier":
+        """Create a new Identifier instance after validation"""
+        validated_value = cls._validate(value)
+        return str.__new__(cls, validated_value)
+
+    @classmethod
+    def generate(cls, *args) -> "Identifier":
+        """Generate a deterministic identifier from the input arguments"""
+        input_string = "".join([str(arg) for arg in args])
+        hashed_data = hashlib.sha256(input_string.encode()).digest()
+        identifier = "".join(
+            cls.characters[b % len(cls.characters)] for b in hashed_data[:8]
+        )
+        return cls(identifier)
