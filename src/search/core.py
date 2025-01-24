@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import Optional
 
 from elasticsearch import Elasticsearch
 
@@ -71,7 +71,7 @@ class DocumentSearchEngine(SearchEngine):
                 index=self.index_name, settings=self.settings, mappings=self.mappings
             )
 
-    def _build_query(self, search_terms: Optional[str], concepts: List[str] = []):
+    def _build_query(self, search_terms: Optional[str], concepts: list[str] = []):
         core_query = self.query if search_terms else {"match_all": {}}
         query = query = {
             "bool": {
@@ -99,7 +99,7 @@ class DocumentSearchEngine(SearchEngine):
         search_terms: Optional[str],
         page: int = 1,
         page_size: int = 10,
-        concepts: List[str] = [],
+        concepts: list[str] = [],
     ) -> SearchResponse:
         query = self._build_query(search_terms, concepts)
         response = self.elasticsearch.search(

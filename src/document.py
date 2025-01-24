@@ -14,8 +14,8 @@ from src.passage_group import PassageGroup
 class Document(PassageGroup):
     """A document containing text with spans"""
 
-    title: str = Field(..., description="The title of the document")
-    text: str = Field(..., description="The raw text of the document")
+    title: str = Field(..., description="The title of the document", repr=True)
+    text: str = Field(..., description="The raw text of the document", repr=False)
 
     @model_validator(mode="after")
     def ensure_that_raw_text_passages_appear_in_document_text(self) -> Self:
@@ -41,11 +41,26 @@ class Document(PassageGroup):
                 )
         return self
 
+    @model_validator(mode="after")
+    def check_whether_passages_are_within_document_text(self) -> Self:
+        """Check whether the passages are within the document text"""
+        for passage in self.passages:
+            if passage.end_index > len(self.text):
+                raise ValueError(
+                    f"end_indices of passages must be less than the length of the "
+                    f"document text. {passage} has end_index={passage.end_index} but "
+                    f"the document text is {len(self.text)} characters long"
+                )
+        return self
+
     def __repr__(self) -> str:
         n_pages = len(
             [passage for passage in self.passages if isinstance(passage, Page)]
         )
         return f"{self.name}(id={self.id}, title={self.title}, n_pages={n_pages})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     @classmethod
     def _validate_path(cls, file: Union[str, Path]) -> None:
@@ -103,6 +118,7 @@ class Document(PassageGroup):
                 Page(
                     text=page,
                     zoom_level=0,
+                    document_id=document.id,
                     start_index=index,
                     end_index=index + len(page),
                 )

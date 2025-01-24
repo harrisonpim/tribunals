@@ -1,5 +1,4 @@
 import random
-from typing import List
 
 import spacy
 from spacy.training import Example
@@ -15,7 +14,7 @@ class SpanCatClassifier(Classifier):
     Classifier that uses spaCy's SpanCategorizer model to find spans in text.
     """
 
-    def __init__(self, concepts: List[Concept], model_name: str = "en_core_web_sm"):
+    def __init__(self, concepts: list[Concept], model_name: str = "en_core_web_sm"):
         self.concepts = concepts
         self.nlp = spacy.load(model_name)
 
@@ -33,28 +32,28 @@ class SpanCatClassifier(Classifier):
         )
         return f"{self.__class__.__name__}({concept_labels})"
 
-    def _generate_training_data(self, documents: List[Document]) -> List[Example]:
+    def _generate_training_data(self, documents: list[Document]) -> list[Example]:
         """
         Generate training data in spaCy format from a list of documents.
 
-        :param List[Document] documents: A list of training documents including concept
+        :param list[Document] documents: A list of training documents including concept
         spans
-        :return List[Example]: A list of training examples in spaCy format
+        :return list[Example]: A list of training examples in spaCy format
         """
         examples = []
         for document in documents:
             doc = self.nlp.make_doc(document.text)
-            example = Example.from_dict(doc, document.to_dict())
+            example = Example.from_dict(doc, document.model_dump())
             examples.append(example)
         return examples
 
     def _train(
-        self, examples: List[Example], epochs: int = 10, batch_size: int = 8
+        self, examples: list[Example], epochs: int = 10, batch_size: int = 8
     ) -> "SpanCatClassifier":
         """
         Train the SpanCat model on the training data.
 
-        :param List[Example] examples: A list of training examples in spaCy format
+        :param list[Example] examples: A list of training examples in spaCy format
         :param int epochs: The number of training epochs
         :param int batch_size: The number of examples in each training batch
         :return SpanCatClassifier: The trained classifier
@@ -65,11 +64,11 @@ class SpanCatClassifier(Classifier):
                 self.nlp.update(batch, drop=0.5, losses={})
         return self
 
-    def fit(self, documents: List[Document]) -> "SpanCatClassifier":
+    def fit(self, documents: list[Document]) -> "SpanCatClassifier":
         """
         Fit the classifier to the training data.
 
-        :param List[Document] documents: A list of training documents including concept
+        :param list[Document] documents: A list of training documents including concept
         spans
         :return SpanCatClassifier: The trained classifier
         """

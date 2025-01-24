@@ -1,11 +1,9 @@
-from typing import List
-
 from elasticsearch import Elasticsearch
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
 from src.document import Document
-from src.span import Span
+from src.passage import Passage
 
 
 class ElasticsearchClassifier(Classifier):
@@ -23,13 +21,13 @@ class ElasticsearchClassifier(Classifier):
         self.es_client = es_client
         self.index_name = index_name
 
-    def predict(self, document: Document) -> List[Span]:
+    def predict(self, document: Document) -> list[Passage]:
         """
         Predict spans in a document by searching for the concept labels in a
         pre-populated Elasticsearch index.
 
         :param Document document: The document to classify
-        :return List[Span]: A list of spans in the document
+        :return list[Passage]: A list of passages in the document
         """
         spans = []
         for search_term in self.concept.all_labels:
@@ -63,7 +61,7 @@ class ElasticsearchClassifier(Classifier):
                 text = text.replace("</em>", "", 1)
 
                 spans.append(
-                    Span(
+                    Passage(
                         start_index=start_index,
                         end_index=end_index,
                         identifier=self.concept.id,

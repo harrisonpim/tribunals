@@ -33,6 +33,9 @@ class Concept(BaseModel):
     def __repr__(self) -> str:
         return f"Concept({self.preferred_label})"
 
+    def __str__(self) -> str:
+        return self.__repr__()
+
     @computed_field
     @property
     def id(self) -> Identifier:

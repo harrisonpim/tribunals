@@ -14,7 +14,7 @@ class Identifier(str):
 
     # Excludes "i", "l", "1", "o", "0" to minimize ambiguity
     characters = "abcdefghjkmnpqrstuvwxyz23456789"
-    regex = rf"^[{characters}]{8}$"
+    regex = f"^[{re.escape(characters)}]{{8}}$"
 
     @classmethod
     def _validate(cls, value: str, field: Any = None) -> str:
@@ -41,7 +41,8 @@ class Identifier(str):
         """Generate a deterministic identifier from the input arguments"""
         input_string = "".join([str(arg) for arg in args])
         hashed_data = hashlib.sha256(input_string.encode()).digest()
+        # Take exactly 8 bytes and map each to a valid character
         identifier = "".join(
-            cls.characters[b % len(cls.characters)] for b in hashed_data[:8]
+            cls.characters[int(b % len(cls.characters))] for b in hashed_data[:8]
         )
         return cls(identifier)

@@ -1,11 +1,11 @@
 import pickle
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import List, Union
+from typing import Union
 
 from src.concept import Concept
 from src.document import Document
-from src.span import Span
+from src.passage import Passage
 
 
 class Classifier(ABC):
@@ -23,17 +23,20 @@ class Classifier(ABC):
         return self
 
     @abstractmethod
-    def predict(self, document: Document) -> List[Span]:
+    def predict(self, document: Document) -> list[Passage]:
         """
         Find spans which match the concept in the document text.
 
         :param Document document: The document to classify
-        :return List[Span]: A list of spans in the document
+        :return list[Passage]: A list of passages in the document
         """
         raise NotImplementedError
 
     def __repr__(self):
         return f"{self.__class__.__name__}({self.concept.preferred_label})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
     def save(self, path: Union[str, Path]):
         """

@@ -10,10 +10,14 @@ class Passage(BaseModel):
 
     text: str = Field(..., description="The text of the passage")
     start_index: int = Field(
-        ..., description="The start index of the passage within the document"
+        ...,
+        description="The start index of the passage within the document",
+        ge=0,
     )
     end_index: int = Field(
-        ..., description="The end index of the passage within the document"
+        ...,
+        description="The end index of the passage within the document",
+        ge=0,
     )
     document_id: Optional[Identifier] = Field(
         default=None, description="The ID of the document that the passage belongs to"
@@ -60,6 +64,9 @@ class Passage(BaseModel):
             f"{key}={value}" for key, value in sorted(self._repr_fields.items())
         )
         return f"{self.name}({repr_contents})"
+
+    def __str__(self) -> str:
+        return self.__repr__()
 
 
 class ConceptMention(Passage):

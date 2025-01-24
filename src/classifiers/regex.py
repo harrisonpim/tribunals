@@ -1,31 +1,30 @@
 import re
-from typing import List
 
 from src.classifiers.classifier import Classifier
 from src.document import Document
-from src.span import Span
+from src.passage import Passage
 
 
 class RegexClassifier(Classifier):
     """Classifier that uses regular expressions to find spans of text."""
 
-    def predict(self, document: Document) -> List[Span]:
+    def predict(self, document: Document) -> list[Passage]:
         """
         Predict spans in a document using regular expressions.
 
         :param Document document: The document to classify
-        :return List[Span]: A list of spans in the document
+        :return list[Passage]: A list of passages in the document
         """
-        spans = []
+        passages = []
         for label in self.concept.all_labels:
             pattern = r"\b{}\b".format(re.escape(label.lower()))
             for match in re.finditer(pattern, document.text.lower()):
-                spans.append(
-                    Span(
+                passages.append(
+                    Passage(
                         start_index=match.start(),
                         end_index=match.end(),
                         identifier=self.concept.id,
-                        type="concept",
+                        text=document.text[match.start() : match.end()],
                     )
                 )
-        return spans
+        return passages
