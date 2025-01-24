@@ -4,8 +4,7 @@ from transformers import AutoModel, AutoTokenizer
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
-from src.document import Document
-from src.passage import Passage
+from src.passage import ConceptMention, Passage
 
 
 class EmbeddingClassifier(Classifier):
@@ -29,12 +28,18 @@ class EmbeddingClassifier(Classifier):
         outputs = self.model(**inputs)
         return outputs.last_hidden_state.mean(dim=1)
 
-    def predict(self, document: Document, threshold=0.8) -> list[Passage]:
-        passages = []
-        for passage in document.passages:
-            text = document.text[passage.start_index : passage.end_index]
-            passage_embedding = self.embed(text)
-            similarity = cosine_similarity(passage_embedding, self.concept_embedding)
-            if similarity > threshold:
-                passages.append(passage)
-        return passages
+    def predict(self, passage: Passage, threshold: float = 0.8) -> list[ConceptMention]:
+        passage_embedding = self.embed(passage.text)
+        similarity = cosine_similarity(passage_embedding, self.concept_embedding)
+        if similarity > threshold:
+            return [
+                ConceptMention(
+                    start_index=passage.start_index,
+                    end_index=passage.end_index,
+                    concept_id=self.concept.id,
+                    text=passage.text,
+                    document_id=passage.document_id,
+                    zoom_level=1,
+                )
+            ]
+        return []

@@ -1,12 +1,14 @@
 import random
 
 import spacy
+from spacy.tokens import Span as SpacySpan
 from spacy.training import Example
 from spacy.util import minibatch
 
 from src.classifiers.classifier import Classifier
 from src.concept import Concept
-from src.document import Document
+from src.passage import ConceptMention, Passage
+from src.passage_group import PassageGroup
 
 
 class SpanCatClassifier(Classifier):
@@ -14,8 +16,8 @@ class SpanCatClassifier(Classifier):
     Classifier that uses spaCy's SpanCategorizer model to find spans in text.
     """
 
-    def __init__(self, concepts: list[Concept], model_name: str = "en_core_web_sm"):
-        self.concepts = concepts
+    def __init__(self, concept: Concept, model_name: str = "en_core_web_sm"):
+        super().__init__(concept)
         self.nlp = spacy.load(model_name)
 
         if "spancat" not in self.nlp.pipe_names:
@@ -26,52 +28,65 @@ class SpanCatClassifier(Classifier):
         self.spancat = self.nlp.get_pipe("spancat")
         self.spancat.add_label(self.concept.preferred_label)
 
-    def __repr__(self):
-        concept_labels = ",".join(
-            [concept.preferred_label for concept in self.concepts]
-        )
-        return f"{self.__class__.__name__}({concept_labels})"
-
-    def _generate_training_data(self, documents: list[Document]) -> list[Example]:
+    def _generate_training_data(self, passage_group: PassageGroup) -> list[Example]:
         """
-        Generate training data in spaCy format from a list of documents.
+        Generate training data in spaCy format from a passage group.
 
-        :param list[Document] documents: A list of training documents including concept
-        spans
+        :param PassageGroup passage_group: A passage group containing training examples
         :return list[Example]: A list of training examples in spaCy format
         """
         examples = []
-        for document in documents:
-            doc = self.nlp.make_doc(document.text)
-            example = Example.from_dict(doc, document.model_dump())
+        for passage in passage_group.passages:
+            doc = self.nlp.make_doc(passage.text)
+            example = Example.from_dict(doc, passage.model_dump())
             examples.append(example)
         return examples
 
     def _train(
         self, examples: list[Example], epochs: int = 10, batch_size: int = 8
-    ) -> "SpanCatClassifier":
+    ) -> None:
         """
         Train the SpanCat model on the training data.
 
         :param list[Example] examples: A list of training examples in spaCy format
         :param int epochs: The number of training epochs
         :param int batch_size: The number of examples in each training batch
-        :return SpanCatClassifier: The trained classifier
         """
         for _ in range(epochs):
             random.shuffle(examples)
             for batch in minibatch(examples, size=batch_size):
                 self.nlp.update(batch, drop=0.5, losses={})
-        return self
 
-    def fit(self, documents: list[Document]) -> "SpanCatClassifier":
+    def fit(self, passage_group: PassageGroup) -> "SpanCatClassifier":
         """
         Fit the classifier to the training data.
 
-        :param list[Document] documents: A list of training documents including concept
-        spans
+        :param PassageGroup passage_group: A passage group containing training examples
         :return SpanCatClassifier: The trained classifier
         """
-        training_data = self._generate_training_data(documents)
+        training_data = self._generate_training_data(passage_group)
         self._train(training_data)
         return self
+
+    def predict(self, passage: Passage) -> list[ConceptMention]:
+        """
+        Predict spans which match the concept in the passage text.
+
+        :param Passage passage: The passage to classify
+        :return list[ConceptMention]: A list of concept mentions in the passage
+        """
+        doc = self.nlp(passage.text)
+        mentions = []
+        found_spans: list[SpacySpan] = doc.spans["sc"]
+        for span in found_spans:
+            mentions.append(
+                ConceptMention(
+                    start_index=span.start,
+                    end_index=span.end,
+                    concept_id=self.concept.id,
+                    text=span.text,
+                    document_id=passage.document_id,
+                    zoom_level=1,
+                )
+            )
+        return mentions

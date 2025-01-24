@@ -42,6 +42,22 @@ class PassageGroup(BaseModel):
             if isinstance(passage, ConceptMention)
         ]
 
+    @computed_field(repr=False)
+    @property
+    def document_ids(self) -> list[Identifier]:
+        """Get the identifiers of documents found in the passage group"""
+        return sorted(
+            list(
+                set(
+                    [
+                        passage.document_id
+                        for passage in self.passages
+                        if passage.document_id
+                    ]
+                )
+            )
+        )
+
     @property
     def name(self) -> str:
         return self.__class__.__name__

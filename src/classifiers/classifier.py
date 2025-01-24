@@ -4,8 +4,7 @@ from pathlib import Path
 from typing import Union
 
 from src.concept import Concept
-from src.document import Document
-from src.passage import Passage
+from src.passage import ConceptMention, Passage
 
 
 class Classifier(ABC):
@@ -23,12 +22,12 @@ class Classifier(ABC):
         return self
 
     @abstractmethod
-    def predict(self, document: Document) -> list[Passage]:
+    def predict(self, passage: Passage) -> list[ConceptMention]:
         """
-        Find spans which match the concept in the document text.
+        Predict spans which match the concept in the passage text.
 
-        :param Document document: The document to classify
-        :return list[Passage]: A list of passages in the document
+        :param Passage passage: The passage to classify
+        :return list[ConceptMention]: A list of concept mentions in the passage
         """
         raise NotImplementedError
 

@@ -1,14 +1,14 @@
 import spacy
 
-from src.passage import Passage
+from src.passage import Sentence
 
 
-def split_text_into_sentences(text: str) -> list[Passage]:
+def split_text_into_sentences(text: str) -> list[Sentence]:
     nlp = spacy.blank("en")
     nlp.add_pipe("sentencizer")
 
     return [
-        Passage(
+        Sentence(
             text=sent.text,
             zoom_level=0,
             start_index=sent.start_char,

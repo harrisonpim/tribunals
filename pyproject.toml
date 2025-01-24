@@ -13,7 +13,6 @@ elasticsearch = "8.5"
 en-core-web-sm = {url = "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.0/en_core_web_sm-3.7.0-py3-none-any.whl"}
 pdfplumber = "^0.11.0"
 pre-commit = "^3.7.0"
-pydantic = "^2.7.0"
 rich = "^13.7.1"
 Scrapy = "^2.11.1"
 setfit = "^1.0.3"

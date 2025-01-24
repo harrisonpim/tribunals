@@ -96,3 +96,7 @@ class Page(Passage):
         description="The page number of the page within the document",
         ge=1,
     )
+
+
+class Sentence(Passage):
+    """A passage of text that represents a single sentence"""
