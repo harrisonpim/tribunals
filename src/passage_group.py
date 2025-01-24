@@ -2,6 +2,7 @@ from pydantic import BaseModel, Field, computed_field
 
 from src.identifiers import Identifier
 from src.passage import ConceptMention, Passage
+from src.rag import rag
 from src.summarisation import summarise
 
 
@@ -76,3 +77,7 @@ class PassageGroup(BaseModel):
             return summarise(text_to_summarise)
         else:
             raise ValueError("No passages to generate summary from")
+
+    def ask_a_question(self, question: str) -> str:
+        """RAG query for the passage group"""
+        return rag(self.passages, question)
