@@ -91,3 +91,8 @@ class Page(Passage):
     document_id: Identifier = Field(
         default=..., description="The ID of the document that the page belongs to"
     )
+    number: int = Field(
+        ...,
+        description="The page number of the page within the document",
+        ge=1,
+    )

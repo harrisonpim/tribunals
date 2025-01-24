@@ -113,11 +113,13 @@ class Document(PassageGroup):
 
         document = Document(title=title, text=text)
         index = 0
-        for page in data:
+        for i, page in enumerate(data):
+            page_number = i + 1
             document.passages.append(
                 Page(
                     text=page,
                     zoom_level=0,
+                    number=page_number,
                     document_id=document.id,
                     start_index=index,
                     end_index=index + len(page),
