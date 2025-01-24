@@ -1,26 +1,26 @@
-import os
+from typing import TYPE_CHECKING
 
-from anthropic import Anthropic
+from src.llm import get_llm_response
 
-from src.passage import Passage
+if TYPE_CHECKING:
+    # only import this circular dependency if we're running in a type-checking
+    # environment, eg for pyright
+    from src.passage_group import PassageGroup
 
 
 def rag(
-    passages: list[Passage], question: str, model: str = "claude-3-5-haiku-20241022"
+    passage_group: "PassageGroup",
+    question: str,
+    model: str = "claude-3-5-haiku-20241022",
 ) -> str:
-    client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
     prompt = (
         "Based on the following sources, answer the following question:\n\n"
-        + f"<question>{question}</question>\n\n"
         + "<sources>\n"
-        + "\n".join([f"<source>{passage.text}</source>" for passage in passages])
-        + "\n</sources>"
+        + "\n".join(
+            [f"<source>{passage.text}</source>" for passage in passage_group.passages]
+        )
+        + "\n</sources>\n"
+        + f"<question>{question}</question>\n\n"
     )
 
-    llm_response = client.messages.create(
-        model=model,
-        messages=[{"role": "user", "content": prompt}],
-        max_tokens=4096,
-    )
-
-    return llm_response.content[0].text
+    return get_llm_response(prompt, model)

@@ -28,11 +28,12 @@ class PassageGroup(BaseModel):
         """Get the number of passages in the passage group"""
         return len(self.passages)
 
-    def get_passages_at_zoom_level(self, zoom_level: int) -> list[Passage]:
+    def get_passages_at_zoom_level(self, zoom_level: int) -> "PassageGroup":
         """Get all passages at a specific zoom level"""
-        return list(
+        filtered_passages = list(
             filter(lambda passage: passage.zoom_level == zoom_level, self.passages)
         )
+        return PassageGroup(passages=filtered_passages)
 
     @computed_field(repr=False)
     @property
@@ -72,12 +73,11 @@ class PassageGroup(BaseModel):
 
     def generate_summary(self) -> str:
         """Generate a summary of the passage group"""
-        if sentences := self.get_passages_at_zoom_level(0):
-            text_to_summarise = "\n".join([sentence.text for sentence in sentences])
-            return summarise(text_to_summarise)
+        if raw_passages := self.get_passages_at_zoom_level(0):
+            return summarise(raw_passages)
         else:
             raise ValueError("No passages to generate summary from")
 
     def ask_a_question(self, question: str) -> str:
         """RAG query for the passage group"""
-        return rag(self.passages, question)
+        return rag(self, question)
