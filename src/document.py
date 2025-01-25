@@ -6,7 +6,6 @@ from typing import Union
 from pydantic import Field, model_validator
 from typing_extensions import Self
 
-from src.chunking import split_text_into_sentences
 from src.passage import Page
 from src.passage_group import PassageGroup
 
@@ -15,19 +14,6 @@ class Document(PassageGroup):
     """A document containing text with spans"""
 
     title: str = Field(..., description="The title of the document", repr=True)
-    text: str = Field(..., description="The raw text of the document", repr=False)
-
-    @model_validator(mode="after")
-    def ensure_that_raw_text_passages_appear_in_document_text(self) -> Self:
-        raw_text_passages = [
-            passage for passage in self.passages if passage.zoom_level == 0
-        ]
-        for passage in raw_text_passages:
-            if passage.text not in self.text:
-                raise ValueError(
-                    f"Passage {passage.id} does not appear in the document"
-                )
-        return self
 
     @model_validator(mode="after")
     def ensure_that_passages_have_same_document_id_as_parent_document(self) -> Self:
@@ -38,18 +24,6 @@ class Document(PassageGroup):
                 raise ValueError(
                     f"The document ID of passage {passage.id} ({passage.document_id}) "
                     f"does not match the document ID ({self.id})"
-                )
-        return self
-
-    @model_validator(mode="after")
-    def check_whether_passages_are_within_document_text(self) -> Self:
-        """Check whether the passages are within the document text"""
-        for passage in self.passages:
-            if passage.end_index > len(self.text):
-                raise ValueError(
-                    f"end_indices of passages must be less than the length of the "
-                    f"document text. {passage} has end_index={passage.end_index} but "
-                    f"the document text is {len(self.text)} characters long"
                 )
         return self
 
@@ -109,16 +83,14 @@ class Document(PassageGroup):
             data = json.load(f)
 
         title = file.stem
-        text = "".join(data)
 
-        document = Document(title=title, text=text)
+        document = Document(title=title)
         index = 0
         for i, page in enumerate(data):
             page_number = i + 1
             document.passages.append(
                 Page(
                     text=page,
-                    zoom_level=0,
                     number=page_number,
                     document_id=document.id,
                     start_index=index,
@@ -126,8 +98,5 @@ class Document(PassageGroup):
                 )
             )
             index += len(page)
-
-        sentences = split_text_into_sentences(document.text)
-        document.passages.extend(sentences)
 
         return document

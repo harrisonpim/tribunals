@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field, computed_field
@@ -5,44 +6,69 @@ from pydantic import BaseModel, Field, computed_field
 from src.identifiers import Identifier
 
 
-class Passage(BaseModel):
-    """A passage of text within a document"""
+class Parent(BaseModel):
+    """A parent passage which was used to create the current passage"""
 
-    text: str = Field(..., description="The text of the passage")
-    start_index: int = Field(
+    type: str = Field(..., description="The type of the parent passage")
+    id: Identifier = Field(..., description="The ID of the parent passage")
+    start_index: int = Field(..., description="The start index of the parent passage")
+    end_index: int = Field(..., description="The end index of the parent passage")
+
+
+class TransformationEvent(BaseModel):
+    """An event which describes a transformation of a passage"""
+
+    parents: list[Parent] = Field(
         ...,
-        description="The start index of the passage within the document",
-        ge=0,
+        description="The parent passages which were used to create the current passage",
     )
-    end_index: int = Field(
+    event_type: str = Field(
         ...,
-        description="The end index of the passage within the document",
-        ge=0,
+        description="The function that was called to transform the passage",
     )
-    document_id: Optional[Identifier] = Field(
-        default=None, description="The ID of the document that the passage belongs to"
-    )
-    zoom_level: int = Field(
-        default=0,
-        description=(
-            "A numeric representation of the level of abstraction away from the "
-            "original raw text. "
-            "0 should always represent raw text, 1 might represent a detailed summary, "
-            "2 might represent key concepts/topics, and 3+ might represent higher "
-            "levels of abstraction"
-        ),
+    timestamp: datetime = Field(
+        default_factory=datetime.now,
+        description="The timestamp of the transformation event",
     )
 
     @computed_field
     @property
     def id(self) -> Identifier:
-        return Identifier.generate(
-            self.document_id, self.text, self.start_index, self.end_index
-        )
+        return Identifier.generate(self.parents, self.event_type, self.timestamp)
+
+
+class Passage(BaseModel):
+    """A passage of text within a document"""
+
+    text: str = Field(..., description="The text of the passage")
+    document_id: Optional[Identifier] = Field(
+        default=None, description="The ID of the document that the passage belongs to"
+    )
+    transformation_history: list[TransformationEvent] = Field(
+        default_factory=list,
+        description="The history of transformations applied to the passage",
+    )
+
+    @computed_field
+    @property
+    def id(self) -> Identifier:
+        return Identifier.generate(self.document_id, self.text)
 
     @property
     def name(self) -> str:
         return self.__class__.__name__
+
+    @computed_field(repr=False)
+    @property
+    def zoom_level(self) -> int:
+        """
+        The number of transformations applied to the passage from the original document.
+
+        A level of 0 indicates that the text is in the raw form extracted from the
+        original document, while higher levels indicate increasing levels of abstraction
+        from the original text.
+        """
+        return len(self.transformation_history)
 
     @property
     def _repr_fields(self) -> dict[str, Any]:

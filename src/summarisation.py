@@ -11,6 +11,5 @@ if TYPE_CHECKING:
 def summarise(
     passage_group: "PassageGroup", model: str = "claude-3-5-haiku-20241022"
 ) -> str:
-    input_text = "\n".join([passage.text for passage in passage_group.passages])
-    prompt = "Summarise the following text: \n\n" + input_text
+    prompt = "Summarise the following text: \n\n" + passage_group.text
     return get_llm_response(prompt, model)

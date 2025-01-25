@@ -71,12 +71,15 @@ class PassageGroup(BaseModel):
     def __str__(self) -> str:
         return self.__repr__()
 
+    @computed_field(repr=False)
+    @property
+    def text(self) -> str:
+        """Get all of the text contained in the passage group"""
+        return "\n".join([passage.text for passage in self.passages])
+
     def summarise(self) -> str:
         """Generate a summary of the passage group"""
-        if raw_passages := self.get_passages_at_zoom_level(0):
-            return summarise(raw_passages)
-        else:
-            raise ValueError("No passages to generate summary from")
+        return summarise(self)
 
     def ask_a_question(self, question: str) -> str:
         """RAG query for the passage group"""
